@@ -6,11 +6,14 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
+    "child_process": "^1.0.2",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "express": "~4.16.1",
     "http-errors": "~1.6.3",
+    "jimp": "^0.8.2",
     "morgan": "~1.9.1",
-    "pug": "2.0.0-beta11"
+    "path": "^0.12.7",
+    "pug": "^2.0.4"
   }
 }

@@ -30,6 +30,7 @@ dependencies:
   image_picker:
   path:
   image:
+  http:
 
 dev_dependencies:
   flutter_test:

@@ -5,13 +5,12 @@ import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:repertories/image_to_music.dart';
 
 import 'input.dart';
 import 'repertory.dart';
 import 'scores.dart';
 
-void main() => runApp(ItMApp());
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override

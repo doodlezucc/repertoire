@@ -6,6 +6,27 @@ import 'package:image/image.dart' as i;
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:repertories/repertory.dart';
+import 'package:repertories/scores.dart' as scores;
+
+void requestSheetInterpretation(Song song) async {
+  final String nodeEndPoint = 'http://192.168.1.15:3000/';
+
+  http.MultipartRequest request =
+      new http.MultipartRequest('POST', Uri.parse(nodeEndPoint));
+  int i = 0;
+  for (scores.ScoreProvider sp in song.scoreProviders) {
+    if (sp is scores.ImageProvider) {
+      request.files.add(
+          await http.MultipartFile.fromPath((i++).toString(), sp.file.path));
+      print("added a file to request");
+    }
+  }
+  print("sending");
+  http.StreamedResponse response = await request.send();
+  print(response.statusCode);
+}
 
 class DecodeParam {
   final File file;

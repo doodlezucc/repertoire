@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:repertories/image_to_music.dart';
 import 'package:xml/xml.dart';
 
 import 'repertory.dart';
@@ -31,6 +32,16 @@ class _ScoreDisplayState extends State<ScoreDisplay> {
                     });
                   },
                 )))
+          ..addAll(widget.song.scoreProviders.any((sp) => sp is ImageProvider)
+              ? [
+                  FlatButton(
+                    child: Text("Digitalize"),
+                    onPressed: () {
+                      requestSheetInterpretation(widget.song);
+                    },
+                  )
+                ]
+              : [])
           ..add(Row(
             children: <Widget>[
               IconButton(
