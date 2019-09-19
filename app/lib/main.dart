@@ -10,6 +10,8 @@ import 'input.dart';
 import 'repertory.dart';
 import 'scores.dart';
 
+bool changes = false;
+
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -121,89 +123,91 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      body: Column(
-        children: <Widget>[
-          Container(
-            height: 50,
-            child: Row(
-              children: <Widget>[
-                IconButton(
-                  icon: Icon(Icons.save),
-                  onPressed: () => {save()},
-                ),
-                IconButton(
-                  icon: Icon(Icons.insert_drive_file),
-                  onPressed: () => {load()},
-                ),
-                Checkbox(
-                  value: _debugSave,
-                  onChanged: (v) {
-                    setState(() {
-                      _debugSave = v;
-                    });
-                  },
-                ),
-                Expanded(
-                  child: Container(),
-                ),
-                DropdownButton(
-                  items: [
-                    DropdownMenuItem(
-                        value: SORT_TITLE, child: Text("by Title")),
-                    DropdownMenuItem(
-                        value: SORT_ARTIST, child: Text("by Artist")),
-                    DropdownMenuItem(value: SORT_DATE, child: Text("by Date"))
-                  ],
-                  onChanged: (i) {
-                    sortMethod = i;
-                    setState(() {
-                      refreshSongs();
-                    });
-                  },
-                  value: sortMethod,
-                )
-              ],
-            ),
-          ),
-          Expanded(
-            child: Container(
-              child: ListView(
-                children: songs.map((s) => buildSong(s)).toList(),
-              ),
-            ),
-          ),
-          Container(
-            height: 50,
-            child: Row(
-              children: <Widget>[
-                // add some elements to the left?
-                Expanded(
-                  child: Container(),
-                ),
-                FlatButton.icon(
-                  onPressed: () => {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (ctx) => EditSong(
-                                song: Song(
-                                    title: "",
-                                    artist: "",
-                                    structure: Structure.basic()),
-                                repertory: repertory,
-                                autofocus: true))).then((v) {
+      body: Builder(
+        builder: (ctx) => Column(
+          children: <Widget>[
+            Container(
+              height: 50,
+              child: Row(
+                children: <Widget>[
+                  IconButton(
+                    icon: Icon(Icons.save),
+                    onPressed: changes ? () => {save(snackCtx: ctx)} : null,
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.insert_drive_file),
+                    onPressed: () => {load()},
+                  ),
+                  Checkbox(
+                    value: _debugSave,
+                    onChanged: (v) {
+                      setState(() {
+                        _debugSave = v;
+                      });
+                    },
+                  ),
+                  Expanded(
+                    child: Container(),
+                  ),
+                  DropdownButton(
+                    items: [
+                      DropdownMenuItem(
+                          value: SORT_TITLE, child: Text("by Title")),
+                      DropdownMenuItem(
+                          value: SORT_ARTIST, child: Text("by Artist")),
+                      DropdownMenuItem(value: SORT_DATE, child: Text("by Date"))
+                    ],
+                    onChanged: (i) {
+                      sortMethod = i;
                       setState(() {
                         refreshSongs();
                       });
-                    })
-                  },
-                  icon: Icon(Icons.add),
-                  label: Text("Add song"),
-                )
-              ],
+                    },
+                    value: sortMethod,
+                  )
+                ],
+              ),
             ),
-          ),
-        ],
+            Expanded(
+              child: Container(
+                child: ListView(
+                  children: songs.map((s) => buildSong(s)).toList(),
+                ),
+              ),
+            ),
+            Container(
+              height: 50,
+              child: Row(
+                children: <Widget>[
+                  // add some elements to the left?
+                  Expanded(
+                    child: Container(),
+                  ),
+                  FlatButton.icon(
+                    onPressed: () => {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (ctx) => EditSong(
+                                  song: Song(
+                                      title: "",
+                                      artist: "",
+                                      structure: Structure.basic()),
+                                  repertory: repertory,
+                                  autofocus: true))).then((v) {
+                        setState(() {
+                          refreshSongs();
+                        });
+                      })
+                    },
+                    icon: Icon(Icons.add),
+                    label: Text("Add song"),
+                  )
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -240,16 +244,25 @@ class _MyHomePageState extends State<MyHomePage> {
     return File("${dir.path}/repertoire.fwd");
   }
 
-  void save() async {
+  void save({BuildContext snackCtx}) async {
     var j = repertory.toJson();
     var str = jsonEncode(j);
     (await file()).writeAsString(str);
+    if (snackCtx != null) {
+      Scaffold.of(snackCtx).showSnackBar(SnackBar(
+        content: Text("Saved!"),
+        duration: Duration(milliseconds: 1000),
+      ));
+    }
     if (_debugSave) {
       print("Saved the following:");
       printJson(j);
     } else {
       print("Saved to file");
     }
+    setState(() {
+      changes = false;
+    });
   }
 
   void load() async {
@@ -422,6 +435,7 @@ class _EditSongState extends State<EditSong> {
     widget.song.artist = _artistField.controller.text;
     widget.song.tags = tags;
     widget.repertory.songs.add(widget.song);
+    changes = true;
   }
 
   @override
