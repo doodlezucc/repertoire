@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'input.dart';
 import 'repertory.dart';
 import 'scores.dart';
 
@@ -240,7 +239,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<File> file() async {
-    var dir = await getApplicationDocumentsDirectory();
+    var dir = await getExternalStorageDirectory();
     return File("${dir.path}/repertoire.fwd");
   }
 
@@ -522,21 +521,27 @@ class _EditSongState extends State<EditSong> {
               ),
             ),
             Column(
-              children:
-                  widget.song.structure.areas.map((a) => buildArea(a)).toList()
-                    ..addAll([
-                      TextField(
-                        maxLines: 5,
-                        keyboardType: TextInputType.text,
-                        onSubmitted: (v) {
-                          for (String s in v.split("\n")) {
-                            widget.song.structure.areas.add(Area(
-                                ChordsSegment(chords: []),
-                                LyricsSegment(lyrics: [TimedLyric(s, 0)])));
-                          }
-                        },
-                      )
-                    ]),
+              children: List.from(widget.song.structure.sections
+                  .map((a) => SectionWidget(area: a)))
+                ..addAll([
+                  TextField(
+                    maxLines: 5,
+                    keyboardType: TextInputType.text,
+                    onSubmitted: (v) {
+                      var lyrics = List<Lyric>();
+                      for (String s in v.split("\n")) {
+                        if (s.isNotEmpty) {
+                          lyrics.add(Lyric(s.trim()));
+                        }
+                      }
+                      widget.song.structure.sections
+                          .clear(); // clear all sections, might be problematic?
+                      widget.song.structure.sections.add(Section(
+                          ChordsElement(chords: []),
+                          LyricsElement(lyrics: lyrics)));
+                    },
+                  )
+                ]),
             ),
             ScoreDisplay(song: widget.song)
           ],
@@ -556,47 +561,6 @@ class _EditSongState extends State<EditSong> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget buildArea(Area area) {
-    return Container(
-      child: Column(
-        children: <Widget>[
-          Wrap(
-              children: List.from(area.chords.chords.map((c) => ChordField(
-                  value: c,
-                  onChanged: (v) {
-                    setState(() {
-                      area.chords.chords
-                          .setAll(area.chords.chords.indexOf(c), [v]);
-                    });
-                  })))
-                ..addAll([
-                  MaterialButton(
-                    minWidth: 0,
-                    child: Icon(Icons.add),
-                    onPressed: () async {
-                      dynamic result = await showInputChord(
-                        context: context,
-                      );
-                      if (result != null) {
-                        setState(() {
-                          area.chords.chords.add(TimedChord.fromChord(result));
-                        });
-                      }
-                    },
-                  ),
-                  area.lyrics.lyrics.length > 0
-                      ? TextField(
-                          controller: TextEditingController(
-                              text: area.lyrics.lyrics.first.text),
-                          style: TextStyle(fontFamily: "RobotoMono"),
-                        )
-                      : Container()
-                ]))
-        ],
       ),
     );
   }

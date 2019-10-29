@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'input.dart';
 import 'music_theory.dart';
 import 'scores.dart';
 
@@ -60,29 +61,20 @@ class Song {
 }
 
 class Structure {
-  List<Area> areas;
+  List<Section> sections;
 
-  Structure({this.areas = const []});
+  Structure({this.sections = const []});
   Structure.basic() {
-    areas = [];
+    sections = [];
   }
 
   Structure.fromJson(Map<String, dynamic> json)
-      : areas = List.from(json["areas"]).map((j) => Area.fromJson(j)).toList();
+      : sections = List.from(json["sections"])
+            .map((j) => Section.fromJson(j))
+            .toList();
 
   Map<String, dynamic> toJson() =>
-      {"areas": areas.map((a) => a.toJson()).toList(growable: false)};
-}
-
-mixin Timed {
-  int offset;
-
-  Map<String, dynamic> timedToJson([Map<String, dynamic> append]) =>
-      {"offset": offset}..addAll(append ?? {});
-
-  void timedFromJson(Map<String, dynamic> json) {
-    offset = json["offset"] ?? 0;
-  }
+      {"sections": sections.map((a) => a.toJson()).toList(growable: false)};
 }
 
 class Voice {
@@ -94,47 +86,18 @@ class Voice {
   static const Voice CHORDS = Voice("Chords", Icons.more_vert);
 }
 
-abstract class Segment {
-  List<Timed> getTimed();
+abstract class Element {
   Voice getVoice();
 
   Map<String, dynamic> toJson();
 
-  bool hasData() => getTimed().length > 0;
+  bool hasData();
 }
 
-class TimedChord extends Chord with Timed {
-  TimedChord.fromChord(Chord chord, [int offset])
-      : super(chord.root, chord.type) {
-    this.offset = offset ?? 5;
-  }
+class ChordsElement extends Element {
+  List<Chord> chords = [];
 
-  TimedChord(ClampedPitch root, ChordType type, [int offset])
-      : super(root, type) {
-    this.offset = offset ?? 5;
-  }
-
-  void setChord(Chord chord) {
-    root = chord.root;
-    type = chord.type;
-  }
-
-  TimedChord.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
-    timedFromJson(json);
-  }
-
-  Map<String, dynamic> toJson() => timedToJson(super.toJson());
-}
-
-class ChordsSegment extends Segment {
-  List<TimedChord> chords = [];
-
-  ChordsSegment({this.chords});
-
-  @override
-  List<Timed> getTimed() {
-    return chords;
-  }
+  ChordsElement({this.chords});
 
   @override
   Voice getVoice() {
@@ -144,34 +107,29 @@ class ChordsSegment extends Segment {
   @override
   Map<String, dynamic> toJson() =>
       {"chords": chords.map((tc) => tc.toJson()).toList(growable: false)};
-}
-
-class TimedLyric with Timed {
-  String text;
-
-  TimedLyric(String text, [int offset]) {
-    this.text = text;
-    this.offset = offset ?? 0;
-  }
-
-  TimedLyric.fromJson(Map<String, dynamic> json) : text = json["text"] {
-    timedFromJson(json);
-  }
-
-  Map<String, dynamic> toJson() => timedToJson({
-        "text": text,
-      });
-}
-
-class LyricsSegment extends Segment {
-  List<TimedLyric> lyrics = [];
-
-  LyricsSegment({this.lyrics});
 
   @override
-  List<Timed> getTimed() {
-    return lyrics;
+  bool hasData() => chords != null && chords.length > 0;
+}
+
+class Lyric {
+  String text;
+
+  Lyric(String text) {
+    this.text = text;
   }
+
+  Lyric.fromJson(Map<String, dynamic> json) : text = json["text"];
+
+  Map<String, dynamic> toJson() => {
+        "text": text,
+      };
+}
+
+class LyricsElement extends Element {
+  List<Lyric> lyrics = [];
+
+  LyricsElement({this.lyrics});
 
   @override
   Voice getVoice() {
@@ -181,41 +139,121 @@ class LyricsSegment extends Segment {
   @override
   Map<String, dynamic> toJson() =>
       {"lyrics": lyrics.map((tl) => tl.toJson()).toList()};
+
+  @override
+  bool hasData() => lyrics != null && lyrics.length > 0;
 }
 
-class Area {
-  ChordsSegment chords;
-  LyricsSegment lyrics;
+class Section {
+  ChordsElement chords;
+  LyricsElement lyrics;
 
-  Area(this.chords, this.lyrics);
+  Section(this.chords, this.lyrics);
 
-  Area.fromJson(Map<String, dynamic> json)
-      : chords = ChordsSegment(
+  Section.fromJson(Map<String, dynamic> json)
+      : chords = ChordsElement(
             chords: List.from(json["chords"] ?? [])
-                .map((jc) => TimedChord.fromJson(jc))
+                .map((jc) => Chord.fromJson(jc))
                 .toList()),
-        lyrics = LyricsSegment(
+        lyrics = LyricsElement(
             lyrics: List.from(json["lyrics"] ?? [])
-                .map((jl) => TimedLyric.fromJson(jl))
+                .map((jl) => Lyric.fromJson(jl))
                 .toList());
 
   Map<String, dynamic> toJson() => (chords.hasData() ? chords.toJson() : {})
     ..addAll(lyrics.hasData() ? lyrics.toJson() : {});
 }
 
-class AreaWidget extends StatelessWidget {
-  final Area area;
+class SectionWidget extends StatefulWidget {
+  final Section area;
 
-  const AreaWidget({Key key, @required this.area}) : super(key: key);
+  const SectionWidget({Key key, @required this.area}) : super(key: key);
 
+  @override
+  _SectionWidgetState createState() => _SectionWidgetState();
+}
+
+class _SectionWidgetState extends State<SectionWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: Stack(
-          // children: area.chords.chords.map((tc) => TimedChordField(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              colors: [Colors.green[200], Colors.blue[200]],
+              stops: [0, 1],
+              begin: Alignment.bottomLeft)),
+      child: Column(
+        children: <Widget>[
+          Wrap(
+              children:
+                  List.from(widget.area.chords.chords.map((c) => ChordField(
+                      value: c,
+                      onChanged: (v) {
+                        setState(() {
+                          widget.area.chords.chords.setAll(
+                              widget.area.chords.chords.indexOf(c), [v]);
+                        });
+                      })))
+                    ..addAll([
+                      MaterialButton(
+                        minWidth: 0,
+                        child: Icon(Icons.add),
+                        onPressed: () async {
+                          dynamic result = await showInputChord(
+                            context: context,
+                          );
+                          if (result != null) {
+                            setState(() {
+                              widget.area.chords.chords.add(result);
+                            });
+                          }
+                        },
+                      ),
+                      widget.area.lyrics.hasData()
+                          ? Column(
+                              children: widget.area.lyrics.lyrics
+                                  .map((l) => LyricWidget(lyric: l))
+                                  .toList())
+                          : Container()
+                    ])),
+        ],
+      ),
+    );
+  }
+}
 
-          // ))
-          ),
+class LyricWidget extends StatefulWidget {
+  final Lyric lyric;
+
+  const LyricWidget({Key key, @required this.lyric}) : super(key: key);
+
+  @override
+  _LyricWidgetState createState() => _LyricWidgetState();
+}
+
+class _LyricWidgetState extends State<LyricWidget> {
+  TextEditingController _ctrl;
+
+  @override
+  void initState() {
+    _ctrl = TextEditingController(text: widget.lyric.text);
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      keyboardType: TextInputType.text,
+      textInputAction: TextInputAction.next,
+      onSubmitted: (s) {
+        FocusScope.of(context).focusInDirection(TraversalDirection.down);
+      },
+      maxLines: null,
+      controller: _ctrl,
+      onChanged: (s) {
+        widget.lyric.text = s;
+      },
+      style: TextStyle(fontFamily: "RobotoMono"),
     );
   }
 }
