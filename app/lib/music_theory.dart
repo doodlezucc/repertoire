@@ -8,6 +8,7 @@ class MetricTime {
   const MetricTime.beats(this._beats);
 }
 
+@Deprecated("this ain't useful")
 class Timeable {
   MetricTime start;
   MetricTime length;
@@ -103,22 +104,20 @@ class ChordType {
   }
 }
 
-class Chord extends Timeable {
+class Chord {
   ClampedPitch root;
   ChordType type;
 
   String get nameAbbreviated => root.name + type.abbreviation;
 
-  Chord(this.root, this.type, {MetricTime start, MetricTime length})
-      : super(start: start, length: length);
+  Chord(this.root, this.type);
 
   Chord.fromJson(Map<String, dynamic> json)
       : root = ClampedPitch.parse(json["root"]),
-        type = ChordType.find(json["type"]),
-        super.fromJson(json);
+        type = ChordType.find(json["type"]);
 
   Map<String, dynamic> toJson() =>
-      super.toJson()..addAll({"root": root.name, "type": type.abbreviation});
+      {"root": root.name, "type": type.abbreviation};
 }
 
 class Pitch extends ClampedPitch {

@@ -176,7 +176,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             Container(
-              height: 50,
+              height: 43,
               child: Row(
                 children: <Widget>[
                   // add some elements to the left?
@@ -521,7 +521,23 @@ class _EditSongState extends State<EditSong> {
                 ],
               ),
             ),
-            buildSegment(widget.song.structure.segments.first),
+            Column(
+              children:
+                  widget.song.structure.areas.map((a) => buildArea(a)).toList()
+                    ..addAll([
+                      TextField(
+                        maxLines: 5,
+                        keyboardType: TextInputType.text,
+                        onSubmitted: (v) {
+                          for (String s in v.split("\n")) {
+                            widget.song.structure.areas.add(Area(
+                                ChordsSegment(chords: []),
+                                LyricsSegment(lyrics: [TimedLyric(s, 0)])));
+                          }
+                        },
+                      )
+                    ]),
+            ),
             ScoreDisplay(song: widget.song)
           ],
         ),
@@ -544,41 +560,42 @@ class _EditSongState extends State<EditSong> {
     );
   }
 
-  Widget buildSegment(Segment segment) {
+  Widget buildArea(Area area) {
     return Container(
       child: Column(
         children: <Widget>[
-          Text("Segment: ${segment.name}"),
-          KeyScaleField(
-            value: segment.keyScale,
-            onChanged: (v) {
-              setState(() {
-                segment.keyScale = v;
-              });
-            },
-          ),
           Wrap(
-              children: List.from(segment.chords.map((c) => ChordField(
+              children: List.from(area.chords.chords.map((c) => ChordField(
                   value: c,
                   onChanged: (v) {
                     setState(() {
-                      segment.chords.setAll(segment.chords.indexOf(c), [v]);
+                      area.chords.chords
+                          .setAll(area.chords.chords.indexOf(c), [v]);
                     });
                   })))
-                ..add(MaterialButton(
-                  minWidth: 0,
-                  child: Icon(Icons.add),
-                  onPressed: () async {
-                    dynamic result = await showInputChord(
-                      context: context,
-                    );
-                    if (result != null) {
-                      setState(() {
-                        segment.chords.add(result);
-                      });
-                    }
-                  },
-                )))
+                ..addAll([
+                  MaterialButton(
+                    minWidth: 0,
+                    child: Icon(Icons.add),
+                    onPressed: () async {
+                      dynamic result = await showInputChord(
+                        context: context,
+                      );
+                      if (result != null) {
+                        setState(() {
+                          area.chords.chords.add(TimedChord.fromChord(result));
+                        });
+                      }
+                    },
+                  ),
+                  area.lyrics.lyrics.length > 0
+                      ? TextField(
+                          controller: TextEditingController(
+                              text: area.lyrics.lyrics.first.text),
+                          style: TextStyle(fontFamily: "RobotoMono"),
+                        )
+                      : Container()
+                ]))
         ],
       ),
     );

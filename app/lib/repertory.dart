@@ -60,47 +60,164 @@ class Song {
 }
 
 class Structure {
-  List<Segment> segments;
+  List<Area> areas;
 
-  Structure({this.segments = const []});
+  Structure({this.areas = const []});
   Structure.basic() {
-    segments = [Segment(name: "Main", keyScale: KeyScale.cMajor())];
+    areas = [];
   }
 
   Structure.fromJson(Map<String, dynamic> json)
-      : segments = List.from(json["segments"])
-            .map((j) => Segment.fromJson(j))
-            .toList();
+      : areas = List.from(json["areas"]).map((j) => Area.fromJson(j)).toList();
 
   Map<String, dynamic> toJson() =>
-      {"segments": segments.map((s) => s.toJson()).toList(growable: false)};
+      {"areas": areas.map((a) => a.toJson()).toList(growable: false)};
 }
 
-class Segment {
-  String name;
-  List<Chord> chords;
-  KeyScale keyScale;
-  String lyrics;
+mixin Timed {
+  int offset;
 
-  Segment(
-      {@required this.name,
-      @required this.keyScale,
-      this.chords = const [],
-      this.lyrics = ""});
+  Map<String, dynamic> timedToJson([Map<String, dynamic> append]) =>
+      {"offset": offset}..addAll(append ?? {});
 
-  Segment.fromJson(Map<String, dynamic> json)
-      : name = json["name"],
-        chords =
-            List.from(json["chords"]).map((jc) => Chord.fromJson(jc)).toList(),
-        keyScale = KeyScale.fromJson(json["key"]),
-        lyrics = json["lyrics"];
+  void timedFromJson(Map<String, dynamic> json) {
+    offset = json["offset"] ?? 0;
+  }
+}
 
-  Map<String, dynamic> toJson() => {
-        "name": name,
-        "chords": chords.map((c) => c.toJson()).toList(growable: false),
-        "key": keyScale.toJson(),
-        "lyrics": lyrics
-      };
+class Voice {
+  final String type;
+  final IconData icon;
+
+  const Voice(this.type, this.icon);
+
+  static const Voice CHORDS = Voice("Chords", Icons.more_vert);
+}
+
+abstract class Segment {
+  List<Timed> getTimed();
+  Voice getVoice();
+
+  Map<String, dynamic> toJson();
+
+  bool hasData() => getTimed().length > 0;
+}
+
+class TimedChord extends Chord with Timed {
+  TimedChord.fromChord(Chord chord, [int offset])
+      : super(chord.root, chord.type) {
+    this.offset = offset ?? 5;
+  }
+
+  TimedChord(ClampedPitch root, ChordType type, [int offset])
+      : super(root, type) {
+    this.offset = offset ?? 5;
+  }
+
+  void setChord(Chord chord) {
+    root = chord.root;
+    type = chord.type;
+  }
+
+  TimedChord.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
+    timedFromJson(json);
+  }
+
+  Map<String, dynamic> toJson() => timedToJson(super.toJson());
+}
+
+class ChordsSegment extends Segment {
+  List<TimedChord> chords = [];
+
+  ChordsSegment({this.chords});
+
+  @override
+  List<Timed> getTimed() {
+    return chords;
+  }
+
+  @override
+  Voice getVoice() {
+    return Voice.CHORDS;
+  }
+
+  @override
+  Map<String, dynamic> toJson() =>
+      {"chords": chords.map((tc) => tc.toJson()).toList(growable: false)};
+}
+
+class TimedLyric with Timed {
+  String text;
+
+  TimedLyric(String text, [int offset]) {
+    this.text = text;
+    this.offset = offset ?? 0;
+  }
+
+  TimedLyric.fromJson(Map<String, dynamic> json) : text = json["text"] {
+    timedFromJson(json);
+  }
+
+  Map<String, dynamic> toJson() => timedToJson({
+        "text": text,
+      });
+}
+
+class LyricsSegment extends Segment {
+  List<TimedLyric> lyrics = [];
+
+  LyricsSegment({this.lyrics});
+
+  @override
+  List<Timed> getTimed() {
+    return lyrics;
+  }
+
+  @override
+  Voice getVoice() {
+    return Voice.CHORDS;
+  }
+
+  @override
+  Map<String, dynamic> toJson() =>
+      {"lyrics": lyrics.map((tl) => tl.toJson()).toList()};
+}
+
+class Area {
+  ChordsSegment chords;
+  LyricsSegment lyrics;
+
+  Area(this.chords, this.lyrics);
+
+  Area.fromJson(Map<String, dynamic> json)
+      : chords = ChordsSegment(
+            chords: List.from(json["chords"] ?? [])
+                .map((jc) => TimedChord.fromJson(jc))
+                .toList()),
+        lyrics = LyricsSegment(
+            lyrics: List.from(json["lyrics"] ?? [])
+                .map((jl) => TimedLyric.fromJson(jl))
+                .toList());
+
+  Map<String, dynamic> toJson() => (chords.hasData() ? chords.toJson() : {})
+    ..addAll(lyrics.hasData() ? lyrics.toJson() : {});
+}
+
+class AreaWidget extends StatelessWidget {
+  final Area area;
+
+  const AreaWidget({Key key, @required this.area}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Stack(
+          // children: area.chords.chords.map((tc) => TimedChordField(
+
+          // ))
+          ),
+    );
+  }
 }
 
 class Tag {

@@ -1,6 +1,28 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:repertories/music_theory.dart';
+import 'package:repertories/repertory.dart';
+
+class TimedChordField extends StatelessWidget {
+  final TimedChord value;
+
+  TimedChordField({@required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialButton(
+      minWidth: 0,
+      color: Colors.grey[200],
+      onPressed: () async {
+        var chord = await showInputChord(context: context, init: value);
+        if (chord != null) {
+          this.value.setChord(chord);
+        }
+      },
+      child: Text(value.nameAbbreviated),
+    );
+  }
+}
 
 class ChordField extends StatelessWidget {
   final Chord value;
@@ -103,10 +125,7 @@ Future<Chord> showInputChord(
             FlatButton(
               child: Text("OK"),
               onPressed: () {
-                Navigator.pop(
-                    ctx,
-                    Chord(pitch.value, type,
-                        start: init.start, length: init.length));
+                Navigator.pop(ctx, Chord(pitch.value, type));
               },
             )
           ],
