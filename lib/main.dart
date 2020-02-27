@@ -232,6 +232,8 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: () {
           setState(() {
             repertory.songs.remove(song);
+            changes = true;
+            refreshSongs();
           });
         },
       ),
@@ -253,7 +255,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<File> file() async {
     var dir = await getExternalStorageDirectory();
-    return File("${dir.path}/repertoire.fwd");
+    return File("${dir.path}/repertory.fwd");
   }
 
   void save({BuildContext snackCtx}) async {
