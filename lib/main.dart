@@ -168,36 +168,36 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             Expanded(
               child: Container(
-                child: ListView(
-                  children: songs.map((s) => buildSong(s)).toList(),
-                ),
+                child: repertory.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Text(
+                              "This repertory is empty",
+                            ),
+                            Container(height: 10),
+                            FloatingActionButton.extended(
+                                onPressed: letUserAddSong,
+                                label: Text("Add song"))
+                          ],
+                        ),
+                      )
+                    : ListView(
+                        children: songs.map((s) => buildSong(s)).toList(),
+                      ),
               ),
             ),
             Container(
               height: 43,
               child: Row(
                 children: <Widget>[
-                  // add some elements to the left?
+                  // add some elements on the left?
                   Expanded(
                     child: Container(),
                   ),
                   FlatButton.icon(
-                    onPressed: () => {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (ctx) => EditSong(
-                                  song: Song(
-                                      title: "",
-                                      artist: "",
-                                      structure: Structure.basic()),
-                                  repertory: repertory,
-                                  autofocus: true))).then((v) {
-                        setState(() {
-                          refreshSongs();
-                        });
-                      })
-                    },
+                    onPressed: letUserAddSong,
                     icon: Icon(Icons.add),
                     label: Text("Add song"),
                   )
@@ -208,6 +208,20 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
     );
+  }
+
+  void letUserAddSong() {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (ctx) => EditSong(
+                song: Song(title: "", artist: "", structure: Structure.basic()),
+                repertory: repertory,
+                autofocus: true))).then((v) {
+      setState(() {
+        refreshSongs();
+      });
+    });
   }
 
   Widget buildSong(Song song) {
@@ -264,6 +278,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void load() async {
+    if (!(await file()).existsSync()) {
+      return;
+    }
     String s = await (await file()).readAsString();
     var j = jsonDecode(s);
     if (_debugSave) {

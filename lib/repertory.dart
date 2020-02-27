@@ -271,6 +271,8 @@ class Repertory {
 
   Repertory();
 
+  get isEmpty => songs.isEmpty;
+
   Set<String> getAllArtists() => songs.map((s) => s.artist).toSet();
 
   Set<Tag> getAllTags() {
