@@ -4,6 +4,7 @@ import 'input.dart';
 import 'music_theory.dart';
 
 class Song {
+  final Repertory repertory;
   String title;
   String artist;
   String get artistSort => artistSortCut(artist).toLowerCase();
@@ -27,22 +28,28 @@ class Song {
     return title.length > 0 || artist.length > 0 || tags.length > 0;
   }
 
-  Song(
-      {this.title = "Untitled",
-      this.artist,
-      this.tags = const {},
-      this.structure}) {
+  Song({
+    this.title = "Untitled",
+    this.artist,
+    this.tags = const {},
+    this.structure,
+    @required this.repertory,
+  }) {
     if (structure == null) {
       structure = Structure();
     }
   }
 
-  Song.fromJson(Map<String, dynamic> json, List<Tag> tagList)
-      : title = json["title"],
+  Song.fromJson(
+    Map<String, dynamic> json,
+    List<Tag> tagList,
+    Repertory repertory,
+  )   : title = json["title"],
         artist = json["artist"],
         tags =
             List<int>.from(json["tags"]).map((index) => tagList[index]).toSet(),
-        structure = Structure.fromJson(json["structure"]);
+        structure = Structure.fromJson(json["structure"]),
+        repertory = repertory;
 
   Map<String, dynamic> toJson(List<Tag> tagList) => {
         "title": title,
@@ -286,8 +293,9 @@ class Repertory {
         .map((jtag) => Tag.fromJson(jtag))
         .toList(growable: false);
 
-    songs =
-        List.from(json["songs"]).map((j) => Song.fromJson(j, tagList)).toSet();
+    songs = List.from(json["songs"])
+        .map((j) => Song.fromJson(j, tagList, this))
+        .toSet();
   }
 
   Map<String, dynamic> toJson() {

@@ -225,7 +225,6 @@ class _DialogClampedPitchState extends State<DialogClampedPitch> {
                 },
                 diameterRatio: 1.5,
                 squeeze: 1.0,
-                clipToSize: true,
                 physics: FixedExtentScrollPhysics(),
                 controller: FixedExtentScrollController(
                     initialItem: (7 - widget.value.whiteIndex) % 7),
