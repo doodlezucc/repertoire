@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Repertory",
+      title: "Repertoir",
       theme: ThemeData(
         primarySwatch: Colors.red,
       ),
@@ -52,6 +52,8 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Song> songs = [];
 
   bool _debugSave = false;
+
+  bool isLoading = false;
 
   List<Song> getSongsSorted() {
     switch (sortMethod) {
@@ -97,7 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Repertory"),
+        title: Text("Repertoir"),
       ),
       body: Builder(
         builder: (ctx) => Column(
@@ -147,39 +149,39 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             Expanded(
               child: Container(
-                child: repertory.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Text(
-                              "This repertory is empty",
+                child: isLoading
+                    ? Center(child: Text("Loading..."))
+                    : repertory.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Text("This repertory is empty"),
+                                Container(height: 10),
+                                FloatingActionButton.extended(
+                                    onPressed: letUserAddSong,
+                                    label: Text("Add song"))
+                              ],
                             ),
-                            Container(height: 10),
-                            FloatingActionButton.extended(
-                                onPressed: letUserAddSong,
-                                label: Text("Add song"))
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        itemBuilder: (ctx, index) => SongListTile(
-                          song: songs[index],
-                          onDelete: () {
-                            setState(() {
-                              repertory.songs.remove(songs[index]);
-                              markAsUnsaved();
-                              refreshSongs();
-                            });
-                          },
-                          onEdited: () {
-                            setState(() {
-                              refreshSongs();
-                            });
-                          },
-                        ),
-                        itemCount: songs.length,
-                      ),
+                          )
+                        : ListView.builder(
+                            itemBuilder: (ctx, index) => SongListTile(
+                              song: songs[index],
+                              onDelete: () {
+                                setState(() {
+                                  repertory.songs.remove(songs[index]);
+                                  markAsUnsaved();
+                                  refreshSongs();
+                                });
+                              },
+                              onEdited: () {
+                                setState(() {
+                                  refreshSongs();
+                                });
+                              },
+                            ),
+                            itemCount: songs.length,
+                          ),
               ),
             ),
             Container(
@@ -249,7 +251,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void load() async {
+    isLoading = true;
     if (!(await file()).existsSync()) {
+      isLoading = false;
       return;
     }
     String s = await (await file()).readAsString();
@@ -260,6 +264,7 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       repertory = Repertory.fromJson(j);
       refreshSongs();
+      isLoading = false;
     });
   }
 
