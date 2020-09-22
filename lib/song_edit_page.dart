@@ -232,8 +232,8 @@ class _SongEditPageState extends State<SongEditPage> {
               ),
             ),
             Column(
-              children: List.from(widget.song.structure.sections
-                  .map((a) => SectionWidget(area: a)))
+              children: List.from(
+                  widget.song.segments.map((a) => SegmentWidget(segment: a)))
                 ..addAll([
                   TextField(
                     maxLines: 5,
@@ -245,9 +245,9 @@ class _SongEditPageState extends State<SongEditPage> {
                           lyrics.add(Lyric(s.trim()));
                         }
                       }
-                      widget.song.structure.sections
+                      widget.song.segments
                           .clear(); // clear all sections, might be problematic?
-                      widget.song.structure.sections.add(Section(
+                      widget.song.segments.add(Segment(
                           ChordsElement(chords: []),
                           LyricsElement(lyrics: lyrics)));
                     },

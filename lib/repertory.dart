@@ -9,7 +9,7 @@ class Song {
   String artist;
   String get artistSort => artistSortCut(artist).toLowerCase();
   Set<Tag> tags = {};
-  Structure structure;
+  List<Segment> segments;
 
   String get description {
     String t = title.isEmpty ? "Untitled Song" : "\"$title\"";
@@ -32,11 +32,11 @@ class Song {
     this.title = "Untitled",
     this.artist,
     this.tags = const {},
-    this.structure,
+    this.segments,
     @required this.repertory,
   }) {
-    if (structure == null) {
-      structure = Structure();
+    if (segments == null) {
+      segments = [Segment(ChordsElement(), LyricsElement())];
     }
   }
 
@@ -44,36 +44,24 @@ class Song {
     Map<String, dynamic> json,
     List<Tag> tagList,
     Repertory repertory,
-  )   : title = json["title"],
-        artist = json["artist"],
-        tags =
-            List<int>.from(json["tags"]).map((index) => tagList[index]).toSet(),
-        structure = Structure.fromJson(json["structure"]),
-        repertory = repertory;
+  ) : this(
+          title: json["title"],
+          artist: json["artist"],
+          tags: List<int>.from(json["tags"])
+              .map((index) => tagList[index])
+              .toSet(),
+          segments: List.from(json["segments"])
+              .map((j) => Segment.fromJson(j))
+              .toList(),
+          repertory: repertory,
+        );
 
   Map<String, dynamic> toJson(List<Tag> tagList) => {
         "title": title,
         "artist": artist,
         "tags": tags.map((t) => tagList.indexOf(t)).toList(growable: false),
-        "structure": structure.toJson()
+        "segments": segments.map((s) => s.toJson()).toList(growable: false),
       };
-}
-
-class Structure {
-  List<Section> sections;
-
-  Structure({this.sections = const []});
-  Structure.basic() {
-    sections = [];
-  }
-
-  Structure.fromJson(Map<String, dynamic> json)
-      : sections = List.from(json["sections"])
-            .map((j) => Section.fromJson(j))
-            .toList();
-
-  Map<String, dynamic> toJson() =>
-      {"sections": sections.map((a) => a.toJson()).toList(growable: false)};
 }
 
 class Voice {
@@ -94,9 +82,9 @@ abstract class Element {
 }
 
 class ChordsElement extends Element {
-  List<Chord> chords = [];
+  List<Chord> chords;
 
-  ChordsElement({this.chords});
+  ChordsElement({List<Chord> chords}) : this.chords = chords ?? [];
 
   @override
   Voice getVoice() {
@@ -126,9 +114,9 @@ class Lyric {
 }
 
 class LyricsElement extends Element {
-  List<Lyric> lyrics = [];
+  List<Lyric> lyrics;
 
-  LyricsElement({this.lyrics});
+  LyricsElement({List<Lyric> lyrics}) : this.lyrics = lyrics ?? [];
 
   @override
   Voice getVoice() {
@@ -143,13 +131,13 @@ class LyricsElement extends Element {
   bool hasData() => lyrics != null && lyrics.length > 0;
 }
 
-class Section {
+class Segment {
   ChordsElement chords;
   LyricsElement lyrics;
 
-  Section(this.chords, this.lyrics);
+  Segment(this.chords, this.lyrics);
 
-  Section.fromJson(Map<String, dynamic> json)
+  Segment.fromJson(Map<String, dynamic> json)
       : chords = ChordsElement(
             chords: List.from(json["chords"] ?? [])
                 .map((jc) => Chord.fromJson(jc))
@@ -163,16 +151,16 @@ class Section {
     ..addAll(lyrics.hasData() ? lyrics.toJson() : {});
 }
 
-class SectionWidget extends StatefulWidget {
-  final Section area;
+class SegmentWidget extends StatefulWidget {
+  final Segment segment;
 
-  const SectionWidget({Key key, @required this.area}) : super(key: key);
+  const SegmentWidget({Key key, @required this.segment}) : super(key: key);
 
   @override
-  _SectionWidgetState createState() => _SectionWidgetState();
+  _SegmentWidgetState createState() => _SegmentWidgetState();
 }
 
-class _SectionWidgetState extends State<SectionWidget> {
+class _SegmentWidgetState extends State<SegmentWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -185,12 +173,12 @@ class _SectionWidgetState extends State<SectionWidget> {
         children: <Widget>[
           Wrap(
               children:
-                  List.from(widget.area.chords.chords.map((c) => ChordField(
+                  List.from(widget.segment.chords.chords.map((c) => ChordField(
                       value: c,
                       onChanged: (v) {
                         setState(() {
-                          widget.area.chords.chords.setAll(
-                              widget.area.chords.chords.indexOf(c), [v]);
+                          widget.segment.chords.chords.setAll(
+                              widget.segment.chords.chords.indexOf(c), [v]);
                         });
                       })))
                     ..addAll([
@@ -203,14 +191,14 @@ class _SectionWidgetState extends State<SectionWidget> {
                           );
                           if (result != null) {
                             setState(() {
-                              widget.area.chords.chords.add(result);
+                              widget.segment.chords.chords.add(result);
                             });
                           }
                         },
                       ),
-                      widget.area.lyrics.hasData()
+                      widget.segment.lyrics.hasData()
                           ? Column(
-                              children: widget.area.lyrics.lyrics
+                              children: widget.segment.lyrics.lyrics
                                   .map((l) => LyricWidget(lyric: l))
                                   .toList())
                           : Container()

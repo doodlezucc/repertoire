@@ -214,7 +214,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 song: Song(
                   title: "",
                   artist: "",
-                  structure: Structure.basic(),
                   repertory: repertory,
                 ),
                 autofocus: true))).then((v) {
