@@ -1,18 +1,46 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
+import 'dart:io';
 
-import 'input.dart';
-import 'music_theory.dart';
+import 'package:flutter/material.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 
 class Song {
   final Repertory repertory;
+  SongData _data;
+  SongData get data => _data;
+  File _file;
+  File get file => _file;
+
+  void save() {
+    file.writeAsStringSync(data.saveToString());
+    print("Saved " + data.description);
+  }
+
+  void _updateFile() {
+    _file = File(
+        join(repertory.directory.path, data.description.replaceAll("/", "-")) +
+            ".txt");
+  }
+
+  void remove() {
+    print("should be removing this one right now :/");
+  }
+
+  Song(SongData data, this.repertory) : _data = data {
+    _updateFile();
+  }
+}
+
+class SongData {
   String title;
   String artist;
   String get artistSort => artistSortCut(artist).toLowerCase();
-  Set<Tag> tags = {};
-  List<Segment> segments;
+  Set<String> tags = {};
+  String lyrichords;
 
   String get description {
-    String t = title.isEmpty ? "Untitled Song" : "\"$title\"";
+    String t = title.isEmpty ? "Untitled" : title;
     if (artist.isEmpty) {
       return t;
     }
@@ -28,21 +56,36 @@ class Song {
     return title.length > 0 || artist.length > 0 || tags.length > 0;
   }
 
-  Song({
-    this.title = "Untitled",
-    this.artist,
-    this.tags = const {},
-    this.segments,
-    @required this.repertory,
-  }) {
-    if (segments == null) {
-      segments = [Segment(ChordsElement(), LyricsElement())];
-    }
+  SongData({
+    @required String title,
+    @required String artist,
+    @required this.tags,
+    this.lyrichords = "",
+  })  : title = title,
+        artist = artist;
+
+  String saveToString() {
+    return [
+      title,
+      artist,
+      tags.map((e) => e.replaceAll(",", "\\,")).join(","),
+      "",
+      lyrichords,
+    ].join("\n");
   }
 
-  Song.fromJson(
+  SongData.parse(String s) {
+    var lines = s.split("\n");
+    title = lines[0];
+    artist = lines[1];
+    tags = lines[2].split(",").map((e) => e.replaceAll("\\,", ",")).toSet();
+
+    lyrichords = lines.sublist(4).join("\n");
+  }
+
+  SongData.fromJson(
     Map<String, dynamic> json,
-    List<Tag> tagList,
+    List<String> tagList,
     Repertory repertory,
   ) : this(
           title: json["title"],
@@ -50,18 +93,7 @@ class Song {
           tags: List<int>.from(json["tags"])
               .map((index) => tagList[index])
               .toSet(),
-          segments: List.from(json["segments"])
-              .map((j) => Segment.fromJson(j))
-              .toList(),
-          repertory: repertory,
         );
-
-  Map<String, dynamic> toJson(List<Tag> tagList) => {
-        "title": title,
-        "artist": artist,
-        "tags": tags.map((t) => tagList.indexOf(t)).toList(growable: false),
-        "segments": segments.map((s) => s.toJson()).toList(growable: false),
-      };
 }
 
 class Voice {
@@ -73,225 +105,52 @@ class Voice {
   static const Voice CHORDS = Voice("Chords", Icons.more_vert);
 }
 
-abstract class Element {
-  Voice getVoice();
-
-  Map<String, dynamic> toJson();
-
-  bool hasData();
-}
-
-class ChordsElement extends Element {
-  List<Chord> chords;
-
-  ChordsElement({List<Chord> chords}) : this.chords = chords ?? [];
-
-  @override
-  Voice getVoice() {
-    return Voice.CHORDS;
-  }
-
-  @override
-  Map<String, dynamic> toJson() =>
-      {"chords": chords.map((tc) => tc.toJson()).toList(growable: false)};
-
-  @override
-  bool hasData() => chords != null && chords.length > 0;
-}
-
-class Lyric {
-  String text;
-
-  Lyric(String text) {
-    this.text = text;
-  }
-
-  Lyric.fromJson(Map<String, dynamic> json) : text = json["text"];
-
-  Map<String, dynamic> toJson() => {
-        "text": text,
-      };
-}
-
-class LyricsElement extends Element {
-  List<Lyric> lyrics;
-
-  LyricsElement({List<Lyric> lyrics}) : this.lyrics = lyrics ?? [];
-
-  @override
-  Voice getVoice() {
-    return Voice.CHORDS;
-  }
-
-  @override
-  Map<String, dynamic> toJson() =>
-      {"lyrics": lyrics.map((tl) => tl.toJson()).toList()};
-
-  @override
-  bool hasData() => lyrics != null && lyrics.length > 0;
-}
-
-class Segment {
-  ChordsElement chords;
-  LyricsElement lyrics;
-
-  Segment(this.chords, this.lyrics);
-
-  Segment.fromJson(Map<String, dynamic> json)
-      : chords = ChordsElement(
-            chords: List.from(json["chords"] ?? [])
-                .map((jc) => Chord.fromJson(jc))
-                .toList()),
-        lyrics = LyricsElement(
-            lyrics: List.from(json["lyrics"] ?? [])
-                .map((jl) => Lyric.fromJson(jl))
-                .toList());
-
-  Map<String, dynamic> toJson() => (chords.hasData() ? chords.toJson() : {})
-    ..addAll(lyrics.hasData() ? lyrics.toJson() : {});
-}
-
-class SegmentWidget extends StatefulWidget {
-  final Segment segment;
-
-  const SegmentWidget({Key key, @required this.segment}) : super(key: key);
-
-  @override
-  _SegmentWidgetState createState() => _SegmentWidgetState();
-}
-
-class _SegmentWidgetState extends State<SegmentWidget> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-          gradient: LinearGradient(
-              colors: [Colors.green[200], Colors.blue[200]],
-              stops: [0, 1],
-              begin: Alignment.bottomLeft)),
-      child: Column(
-        children: <Widget>[
-          Wrap(
-              children:
-                  List.from(widget.segment.chords.chords.map((c) => ChordField(
-                      value: c,
-                      onChanged: (v) {
-                        setState(() {
-                          widget.segment.chords.chords.setAll(
-                              widget.segment.chords.chords.indexOf(c), [v]);
-                        });
-                      })))
-                    ..addAll([
-                      MaterialButton(
-                        minWidth: 0,
-                        child: Icon(Icons.add),
-                        onPressed: () async {
-                          dynamic result = await showInputChord(
-                            context: context,
-                          );
-                          if (result != null) {
-                            setState(() {
-                              widget.segment.chords.chords.add(result);
-                            });
-                          }
-                        },
-                      ),
-                      widget.segment.lyrics.hasData()
-                          ? Column(
-                              children: widget.segment.lyrics.lyrics
-                                  .map((l) => LyricWidget(lyric: l))
-                                  .toList())
-                          : Container()
-                    ])),
-        ],
-      ),
-    );
-  }
-}
-
-class LyricWidget extends StatefulWidget {
-  final Lyric lyric;
-
-  const LyricWidget({Key key, @required this.lyric}) : super(key: key);
-
-  @override
-  _LyricWidgetState createState() => _LyricWidgetState();
-}
-
-class _LyricWidgetState extends State<LyricWidget> {
-  TextEditingController _ctrl;
-
-  @override
-  void initState() {
-    _ctrl = TextEditingController(text: widget.lyric.text);
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      keyboardType: TextInputType.text,
-      textInputAction: TextInputAction.next,
-      onSubmitted: (s) {
-        FocusScope.of(context).focusInDirection(TraversalDirection.down);
-      },
-      maxLines: null,
-      controller: _ctrl,
-      onChanged: (s) {
-        widget.lyric.text = s;
-      },
-      style: TextStyle(fontFamily: "RobotoMono"),
-    );
-  }
-}
-
-class Tag {
-  String name;
-  Color color;
-
-  Tag({@required this.name, this.color = Colors.blueGrey});
-
-  bool operator ==(other) => other is Tag && name == other.name;
-  int get hashCode => name.hashCode;
-
-  Tag.fromJson(Map<String, dynamic> json)
-      : name = json["name"],
-        color = Color(json["color"]);
-
-  Map<String, dynamic> toJson() => {"name": name, "color": color.value};
-}
-
 class Repertory {
+  Directory directory;
+
   Set<Song> songs = {};
 
-  Repertory();
+  Repertory(this.directory);
 
   get isEmpty => songs.isEmpty;
 
-  Set<String> getAllArtists() => songs.map((s) => s.artist).toSet();
+  Set<String> getAllArtists() => songs.map((s) => s.data.artist).toSet();
 
-  Set<Tag> getAllTags() {
-    Set<Tag> out = {};
-    songs.forEach((song) => out.addAll(song.tags));
+  Set<String> getAllTags() {
+    Set<String> out = {};
+    songs.forEach((song) => out.addAll(song.data.tags));
     return out;
   }
 
-  Repertory.fromJson(Map<String, dynamic> json) {
-    List<Tag> tagList = List.from(json["tags"])
-        .map((jtag) => Tag.fromJson(jtag))
-        .toList(growable: false);
+  @deprecated
+  Repertory.fromJson(Map<String, dynamic> json, void Function() onDone) {
+    getExternalStorageDirectory().then((dir) {
+      directory = Directory(join(dir.path, "Repertoir"));
+      directory.createSync(recursive: true);
 
-    songs = List.from(json["songs"])
-        .map((j) => Song.fromJson(j, tagList, this))
-        .toSet();
+      List<String> tagList = List.from(json["tags"])
+          .map<String>((jtag) => jtag["name"])
+          .toList(growable: false);
+
+      songs = List.from(json["songs"])
+          .map((j) => Song(SongData.fromJson(j, tagList, this), this))
+          .toSet();
+
+      onDone();
+    });
   }
 
-  Map<String, dynamic> toJson() {
-    List<Tag> tagList = List<Tag>.from(getAllTags(), growable: false);
+  void loadAllSongs(void Function(Song song) onLoaded) {
+    var filestream = directory.list();
+    filestream.listen((file) async {
+      var song = await _loadSong(file);
+      onLoaded(song);
+    });
+  }
 
-    return {
-      "tags": tagList.map((t) => t.toJson()).toList(growable: false),
-      "songs": songs.map((s) => s.toJson(tagList)).toList(growable: false)
-    };
+  Future<Song> _loadSong(File file) async {
+    var song = Song(SongData.parse(await file.readAsString()), this);
+    songs.add(song);
+    return song;
   }
 }

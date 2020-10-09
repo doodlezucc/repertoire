@@ -1,7 +1,6 @@
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 import 'package:flutter/material.dart';
 
-import 'main.dart';
 import 'repertory.dart';
 
 class SongEditPage extends StatefulWidget {
@@ -18,13 +17,13 @@ class SongEditPage extends StatefulWidget {
 class _SongEditPageState extends State<SongEditPage> {
   TextEditingController _cTitle;
   AutoCompleteTextField<String> _artistField;
-  AutoCompleteTextField<Tag> _tagAddField;
-  Set<Tag> tags;
+  AutoCompleteTextField<String> _tagAddField;
+  Set<String> tags;
 
   void initState() {
     super.initState();
-    tags = widget.song.tags.toSet();
-    _cTitle = TextEditingController(text: widget.song.title);
+    tags = widget.song.data.tags.toSet();
+    _cTitle = TextEditingController(text: widget.song.data.title);
     resetArtistField();
     resetTagAddField();
   }
@@ -37,7 +36,7 @@ class _SongEditPageState extends State<SongEditPage> {
     GlobalKey<AutoCompleteTextFieldState<String>> key = new GlobalKey();
     _artistField = AutoCompleteTextField<String>(
       focusNode: FocusNode(),
-      controller: TextEditingController(text: widget.song.artist),
+      controller: TextEditingController(text: widget.song.data.artist),
       decoration: InputDecoration(hintText: "Artist..."),
       key: key,
       suggestions:
@@ -68,12 +67,12 @@ class _SongEditPageState extends State<SongEditPage> {
             ));
       },
       itemSorter: (a, b) {
-        if (Song.artistSortCut(a)
+        if (SongData.artistSortCut(a)
             .toLowerCase()
             .startsWith(_artistField.controller.text.toLowerCase())) {
           return -1;
         }
-        if (Song.artistSortCut(b)
+        if (SongData.artistSortCut(b)
             .toLowerCase()
             .startsWith(_artistField.controller.text.toLowerCase())) {
           return 1;
@@ -88,8 +87,8 @@ class _SongEditPageState extends State<SongEditPage> {
   }
 
   void resetTagAddField() {
-    GlobalKey<AutoCompleteTextFieldState<Tag>> key = new GlobalKey();
-    _tagAddField = AutoCompleteTextField<Tag>(
+    GlobalKey<AutoCompleteTextFieldState<String>> key = new GlobalKey();
+    _tagAddField = AutoCompleteTextField<String>(
       focusNode: FocusNode(),
       controller: TextEditingController(text: ""),
       decoration: InputDecoration(hintText: "New tag..."),
@@ -100,7 +99,7 @@ class _SongEditPageState extends State<SongEditPage> {
       submitOnSuggestionTap: false,
       textSubmitted: (s) {
         if (s.length > 0) {
-          addTag(Tag(name: s));
+          addTag(s);
         }
       },
       textChanged: (s) {},
@@ -110,14 +109,13 @@ class _SongEditPageState extends State<SongEditPage> {
               addTag(item);
             },
             behavior: HitTestBehavior.opaque,
-            child:
-                Padding(padding: EdgeInsets.all(8.0), child: Text(item.name)));
+            child: Padding(padding: EdgeInsets.all(8.0), child: Text(item)));
       },
       itemSorter: (a, b) {
-        return a.name.compareTo(b.name);
+        return a.compareTo(b);
       },
       itemFilter: (item, query) {
-        return item.name.toLowerCase().startsWith(query.toLowerCase());
+        return item.toLowerCase().startsWith(query.toLowerCase());
       },
       itemSubmitted: (item) {
         addTag(item);
@@ -125,10 +123,10 @@ class _SongEditPageState extends State<SongEditPage> {
     );
   }
 
-  void addTag(Tag tag) {
+  void addTag(String tag) {
     setState(() {
       tags.add(tag);
-      if (!_tagAddField.suggestions.contains(tag.name)) {
+      if (!_tagAddField.suggestions.contains(tag)) {
         _tagAddField.addSuggestion(tag);
       }
       _tagAddField.clear();
@@ -136,16 +134,15 @@ class _SongEditPageState extends State<SongEditPage> {
   }
 
   bool didChange() {
-    return widget.song.title != _cTitle.text ||
-        widget.song.artist != _artistField.controller.text;
+    return widget.song.data.title != _cTitle.text ||
+        widget.song.data.artist != _artistField.controller.text;
   }
 
   void applyChanges() {
-    widget.song.title = _cTitle.text;
-    widget.song.artist = _artistField.controller.text;
-    widget.song.tags = tags;
+    widget.song.data.title = _cTitle.text;
+    widget.song.data.artist = _artistField.controller.text;
+    widget.song.data.tags = tags;
     widget.song.repertory.songs.add(widget.song);
-    markAsUnsaved();
   }
 
   @override
@@ -206,7 +203,7 @@ class _SongEditPageState extends State<SongEditPage> {
             Wrap(
               children: tags
                   .map((tag) => Chip(
-                        label: Text(tag.name),
+                        label: Text(tag),
                         deleteIcon: Icon(Icons.cancel),
                         onDeleted: () {
                           setState(() {
@@ -216,44 +213,7 @@ class _SongEditPageState extends State<SongEditPage> {
                       ))
                   .toList(),
             ),
-            Container(
-              height: 50,
-              child: Row(
-                children: <Widget>[
-                  Expanded(child: _tagAddField),
-                  FlatButton.icon(
-                    icon: Icon(Icons.add_circle),
-                    label: Text("Add"),
-                    onPressed: () {
-                      _tagAddField.triggerSubmitted();
-                    },
-                  )
-                ],
-              ),
-            ),
-            Column(
-              children: List.from(
-                  widget.song.segments.map((a) => SegmentWidget(segment: a)))
-                ..addAll([
-                  TextField(
-                    maxLines: 5,
-                    keyboardType: TextInputType.text,
-                    onSubmitted: (v) {
-                      var lyrics = List<Lyric>();
-                      for (String s in v.split("\n")) {
-                        if (s.isNotEmpty) {
-                          lyrics.add(Lyric(s.trim()));
-                        }
-                      }
-                      widget.song.segments
-                          .clear(); // clear all sections, might be problematic?
-                      widget.song.segments.add(Segment(
-                          ChordsElement(chords: []),
-                          LyricsElement(lyrics: lyrics)));
-                    },
-                  )
-                ]),
-            )
+            Text(widget.song.data.lyrichords),
           ],
         ),
         bottomNavigationBar: Container(

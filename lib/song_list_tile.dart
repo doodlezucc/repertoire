@@ -18,7 +18,7 @@ class SongListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text(song.description),
+      title: Text(song.data.description),
       trailing: IconButton(
         icon: Icon(Icons.delete),
         onPressed: onDelete,

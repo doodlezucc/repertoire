@@ -2,17 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:repertories/song_edit_page.dart';
 
 import 'repertory.dart';
 import 'song_list_tile.dart';
-
-bool _somethingChanged = false;
-
-void markAsUnsaved() {
-  _somethingChanged = true;
-}
 
 void main() => runApp(MyApp());
 
@@ -42,7 +37,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Repertory repertory = Repertory();
+  Repertory repertory = Repertory(null);
 
   static const int SORT_TITLE = 0;
   static const int SORT_ARTIST = 1;
@@ -60,24 +55,28 @@ class _MyHomePageState extends State<MyHomePage> {
       case SORT_TITLE:
         return repertory.songs.toList()
           ..sort((a, b) {
-            if (a.title == b.title) {
-              return a.artistSort.compareTo(b.artistSort);
+            if (a.data.title == b.data.title) {
+              return a.data.artistSort.compareTo(b.data.artistSort);
             }
-            return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+            return a.data.title
+                .toLowerCase()
+                .compareTo(b.data.title.toLowerCase());
           });
       case SORT_ARTIST:
         return repertory.songs.toList()
           ..sort((a, b) {
-            if (a.artist == b.artist) {
-              return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+            if (a.data.artist == b.data.artist) {
+              return a.data.title
+                  .toLowerCase()
+                  .compareTo(b.data.title.toLowerCase());
             }
-            if (b.artist.isEmpty) {
+            if (b.data.artist.isEmpty) {
               return -1;
             }
-            if (a.artist.isEmpty) {
+            if (a.data.artist.isEmpty) {
               return 1;
             }
-            return a.artistSort.compareTo(b.artistSort);
+            return a.data.artistSort.compareTo(b.data.artistSort);
           });
       case SORT_DATE:
         return repertory.songs.toList().reversed.toList();
@@ -110,8 +109,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 children: <Widget>[
                   IconButton(
                     icon: Icon(Icons.save),
-                    onPressed:
-                        _somethingChanged ? () => {save(snackCtx: ctx)} : null,
+                    onPressed: () {
+                      save(snackCtx: ctx);
+                    },
                   ),
                   IconButton(
                     icon: Icon(Icons.insert_drive_file),
@@ -169,8 +169,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               song: songs[index],
                               onDelete: () {
                                 setState(() {
+                                  songs[index].remove();
                                   repertory.songs.remove(songs[index]);
-                                  markAsUnsaved();
                                   refreshSongs();
                                 });
                               },
@@ -211,11 +211,8 @@ class _MyHomePageState extends State<MyHomePage> {
         context,
         MaterialPageRoute(
             builder: (ctx) => SongEditPage(
-                song: Song(
-                  title: "",
-                  artist: "",
-                  repertory: repertory,
-                ),
+                song:
+                    Song(SongData(title: "", artist: "", tags: {}), repertory),
                 autofocus: true))).then((v) {
       setState(() {
         refreshSongs();
@@ -228,42 +225,30 @@ class _MyHomePageState extends State<MyHomePage> {
     return File("${dir.path}/repertory.fwd");
   }
 
+  @deprecated
   void save({BuildContext snackCtx}) async {
-    var j = repertory.toJson();
-    var str = jsonEncode(j);
-    (await file()).writeAsString(str);
+    repertory.songs.forEach((element) {
+      element.save();
+    });
     if (snackCtx != null) {
       Scaffold.of(snackCtx).showSnackBar(SnackBar(
         content: Text("Saved!"),
         duration: Duration(milliseconds: 1000),
       ));
     }
-    if (_debugSave) {
-      print("Saved the following:");
-      printJson(j);
-    } else {
-      print("Saved to file");
-    }
-    setState(() {
-      _somethingChanged = false;
-    });
   }
 
   void load() async {
     isLoading = true;
-    if (!(await file()).existsSync()) {
-      isLoading = false;
-      return;
-    }
-    String s = await (await file()).readAsString();
-    var j = jsonDecode(s);
-    if (_debugSave) {
-      printJson(j);
-    }
-    setState(() {
-      repertory = Repertory.fromJson(j);
-      refreshSongs();
-      isLoading = false;
+    getExternalStorageDirectory().then((dir) {
+      var directory = Directory(path.join(dir.path, "Repertoir"));
+      repertory = Repertory(directory);
+      repertory.loadAllSongs((song) {
+        setState(() {
+          isLoading = false;
+          refreshSongs();
+        });
+      });
     });
   }
 
