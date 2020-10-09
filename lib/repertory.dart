@@ -78,7 +78,10 @@ class SongData {
     var lines = s.split("\n");
     title = lines[0];
     artist = lines[1];
-    tags = lines[2].split(",").map((e) => e.replaceAll("\\,", ",")).toSet();
+    var line = lines[2];
+    tags = line.length > 0
+        ? lines[2].split(",").map((e) => e.replaceAll("\\,", ",")).toSet()
+        : {};
 
     lyrichords = lines.sublist(4).join("\n");
   }
