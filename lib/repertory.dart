@@ -12,18 +12,22 @@ class Song {
   SongData get data => _data;
   File _file;
   File get file => _file;
+  final int creationTimestamp;
 
-  void setData(SongData newData) {
-    if (_data.description != newData.description) {
+  void setData(SongData newData, {bool isCreation = false}) {
+    if (isCreation) {
+      _file = File(getFilePath(newData, repertory));
+      repertory.songs.add(this);
+    } else if (_data.description != newData.description) {
       _file = _file.renameSync(getFilePath(newData, repertory));
-      print("Renamed file!");
+      print("!Renamed file!");
     }
     _data = newData;
     save();
   }
 
   void save() {
-    file.writeAsStringSync(data.saveToString());
+    file.writeAsStringSync("$creationTimestamp\n" + data.saveToString());
     print("Saved " + data.description);
   }
 
@@ -35,7 +39,7 @@ class Song {
     print("should be removing this one right now :/");
   }
 
-  Song(SongData data, this.repertory) : _data = data {
+  Song(SongData data, this.repertory, this.creationTimestamp) : _data = data {
     _file = File(getFilePath(data, repertory));
   }
 }
@@ -87,7 +91,7 @@ class SongData {
     artist = lines[1];
     var line = lines[2];
     tags = line.length > 0
-        ? lines[2].split(",").map((e) => e.replaceAll("\\,", ",")).toSet()
+        ? line.split(",").map((e) => e.replaceAll("\\,", ",")).toSet()
         : {};
 
     lyrichords = lines.sublist(4).join("\n");
@@ -158,8 +162,9 @@ class Repertory {
           .map<String>((jtag) => jtag["name"])
           .toList(growable: false);
 
+      int i = 0;
       songs = List.from(json["songs"])
-          .map((j) => Song(SongData.fromJson(j, tagList, this), this))
+          .map((j) => Song(SongData.fromJson(j, tagList, this), this, i++))
           .toSet();
 
       onDone();
@@ -175,7 +180,13 @@ class Repertory {
   }
 
   Future<Song> _loadSong(File file) async {
-    var song = Song(SongData.parse(await file.readAsString()), this);
+    var s = await file.readAsString();
+    var timestamp = int.parse(s.substring(0, s.indexOf("\n")));
+    var song = Song(
+      SongData.parse(s.substring(s.indexOf("\n") + 1)),
+      this,
+      timestamp,
+    );
     songs.add(song);
     return song;
   }

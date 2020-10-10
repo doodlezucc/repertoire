@@ -72,7 +72,10 @@ class _MyHomePageState extends State<MyHomePage> {
             return a.data.artistSort.compareTo(b.data.artistSort);
           });
       case SORT_DATE:
-        return repertory.songs.toList().reversed.toList();
+        return repertory.songs.toList()
+          ..sort((a, b) {
+            return -a.creationTimestamp.compareTo(b.creationTimestamp);
+          });
     }
     return repertory.songs.toList();
   }
@@ -101,8 +104,16 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Row(
                 children: <Widget>[
                   IconButton(
+                    icon: Icon(Icons.save),
+                    onPressed: () {
+                      songs.forEach((element) {
+                        element.save();
+                      });
+                    },
+                  ),
+                  IconButton(
                     icon: Icon(Icons.insert_drive_file),
-                    onPressed: () => {load()},
+                    onPressed: load,
                   ),
                   Expanded(
                     child: Container(),
@@ -190,9 +201,9 @@ class _MyHomePageState extends State<MyHomePage> {
         context,
         MaterialPageRoute(
             builder: (ctx) => SongEditPage(
-                song:
-                    Song(SongData(title: "", artist: "", tags: {}), repertory),
-                autofocus: true))).then((v) {
+                song: Song(SongData(title: "", artist: "", tags: {}), repertory,
+                    DateTime.now().millisecondsSinceEpoch),
+                isCreation: true))).then((v) {
       setState(() {
         refreshSongs();
       });
@@ -214,6 +225,20 @@ class _MyHomePageState extends State<MyHomePage> {
           isLoading = false;
           refreshSongs();
         });
+      });
+    });
+  }
+
+  @deprecated
+  void loadJson() async {
+    if (!(await file()).existsSync()) {
+      return;
+    }
+    String s = await (await file()).readAsString();
+    var j = jsonDecode(s);
+    repertory = Repertory.fromJson(j, () {
+      setState(() {
+        refreshSongs();
       });
     });
   }

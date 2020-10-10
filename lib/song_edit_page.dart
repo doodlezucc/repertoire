@@ -5,9 +5,9 @@ import 'repertory.dart';
 
 class SongEditPage extends StatefulWidget {
   final Song song;
-  final bool autofocus;
+  final bool isCreation;
 
-  const SongEditPage({Key key, @required this.song, this.autofocus = false})
+  const SongEditPage({Key key, @required this.song, this.isCreation = false})
       : super(key: key);
 
   @override
@@ -138,7 +138,7 @@ class _SongEditPageState extends State<SongEditPage> {
   }
 
   void applyChanges() {
-    widget.song.setData(data);
+    widget.song.setData(data, isCreation: widget.isCreation);
   }
 
   @override
@@ -192,7 +192,7 @@ class _SongEditPageState extends State<SongEditPage> {
                   onSubmitted: (s) {
                     _artistField.focusNode.requestFocus();
                   },
-                  autofocus: widget.autofocus,
+                  autofocus: widget.isCreation,
                 ),
                 _artistField,
               ],
