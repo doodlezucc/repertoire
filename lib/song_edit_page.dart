@@ -18,6 +18,7 @@ class _SongEditPageState extends State<SongEditPage> {
   SongData data;
   AutoCompleteTextField<String> _artistField;
   AutoCompleteTextField<String> _tagAddField;
+  String tagFieldText = "";
 
   void initState() {
     super.initState();
@@ -90,7 +91,7 @@ class _SongEditPageState extends State<SongEditPage> {
     GlobalKey<AutoCompleteTextFieldState<String>> key = new GlobalKey();
     _tagAddField = AutoCompleteTextField<String>(
       focusNode: FocusNode(),
-      controller: TextEditingController(text: ""),
+      controller: TextEditingController(text: tagFieldText),
       decoration: InputDecoration(hintText: "New tag..."),
       key: key,
       textInputAction: TextInputAction.next,
@@ -102,7 +103,11 @@ class _SongEditPageState extends State<SongEditPage> {
           addTag(s);
         }
       },
-      textChanged: (s) {},
+      textChanged: (s) {
+        setState(() {
+          tagFieldText = s;
+        });
+      },
       itemBuilder: (context, item) {
         return GestureDetector(
             onTap: () {
@@ -218,9 +223,11 @@ class _SongEditPageState extends State<SongEditPage> {
                   FlatButton.icon(
                     icon: Icon(Icons.add_circle),
                     label: Text("Add"),
-                    onPressed: () {
-                      _tagAddField.triggerSubmitted();
-                    },
+                    onPressed: _tagAddField.controller.text.isEmpty
+                        ? null
+                        : () {
+                            _tagAddField.triggerSubmitted();
+                          },
                   )
                 ],
               ),
