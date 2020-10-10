@@ -15,15 +15,13 @@ class SongEditPage extends StatefulWidget {
 }
 
 class _SongEditPageState extends State<SongEditPage> {
-  TextEditingController _cTitle;
+  SongData data;
   AutoCompleteTextField<String> _artistField;
   AutoCompleteTextField<String> _tagAddField;
-  Set<String> tags;
 
   void initState() {
     super.initState();
-    tags = widget.song.data.tags.toSet();
-    _cTitle = TextEditingController(text: widget.song.data.title);
+    data = SongData.from(widget.song.data);
     resetArtistField();
     resetTagAddField();
   }
@@ -36,7 +34,7 @@ class _SongEditPageState extends State<SongEditPage> {
     GlobalKey<AutoCompleteTextFieldState<String>> key = new GlobalKey();
     _artistField = AutoCompleteTextField<String>(
       focusNode: FocusNode(),
-      controller: TextEditingController(text: widget.song.data.artist),
+      controller: TextEditingController(text: data.artist),
       decoration: InputDecoration(hintText: "Artist..."),
       key: key,
       suggestions:
@@ -45,7 +43,9 @@ class _SongEditPageState extends State<SongEditPage> {
       submitOnSuggestionTap: true,
       textInputAction: TextInputAction.next,
       textSubmitted: next,
-      textChanged: (s) {},
+      textChanged: (s) {
+        data.artist = s;
+      },
       itemBuilder: (context, item) {
         String q = _artistField.controller.text;
         int index = item.toLowerCase().indexOf(q.toLowerCase());
@@ -125,7 +125,7 @@ class _SongEditPageState extends State<SongEditPage> {
 
   void addTag(String tag) {
     setState(() {
-      tags.add(tag);
+      data.tags.add(tag);
       if (!_tagAddField.suggestions.contains(tag)) {
         _tagAddField.addSuggestion(tag);
       }
@@ -134,15 +134,11 @@ class _SongEditPageState extends State<SongEditPage> {
   }
 
   bool didChange() {
-    return widget.song.data.title != _cTitle.text ||
-        widget.song.data.artist != _artistField.controller.text;
+    return !widget.song.data.matches(data);
   }
 
   void applyChanges() {
-    widget.song.data.title = _cTitle.text;
-    widget.song.data.artist = _artistField.controller.text;
-    widget.song.data.tags = tags;
-    widget.song.repertory.songs.add(widget.song);
+    widget.song.setData(data);
   }
 
   @override
@@ -189,9 +185,10 @@ class _SongEditPageState extends State<SongEditPage> {
               // Text fields (title, artist)
               children: <Widget>[
                 TextField(
-                  controller: _cTitle,
+                  controller: TextEditingController(text: data.title),
                   decoration: InputDecoration(hintText: "Title..."),
                   textInputAction: TextInputAction.next,
+                  onChanged: (s) => data.title = s,
                   onSubmitted: (s) {
                     _artistField.focusNode.requestFocus();
                   },
@@ -201,19 +198,34 @@ class _SongEditPageState extends State<SongEditPage> {
               ],
             ),
             Wrap(
-              children: tags
+              children: data.tags
                   .map((tag) => Chip(
                         label: Text(tag),
                         deleteIcon: Icon(Icons.cancel),
                         onDeleted: () {
                           setState(() {
-                            tags.remove(tag);
+                            data.tags.remove(tag);
                           });
                         },
                       ))
                   .toList(),
             ),
-            Text(widget.song.data.lyrichords),
+            Container(
+              height: 50,
+              child: Row(
+                children: <Widget>[
+                  Expanded(child: _tagAddField),
+                  FlatButton.icon(
+                    icon: Icon(Icons.add_circle),
+                    label: Text("Add"),
+                    onPressed: () {
+                      _tagAddField.triggerSubmitted();
+                    },
+                  )
+                ],
+              ),
+            ),
+            Text(data.lyrichords),
           ],
         ),
         bottomNavigationBar: Container(

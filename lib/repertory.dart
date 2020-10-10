@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -12,23 +13,30 @@ class Song {
   File _file;
   File get file => _file;
 
+  void setData(SongData newData) {
+    if (_data.description != newData.description) {
+      _file = _file.renameSync(getFilePath(newData, repertory));
+      print("Renamed file!");
+    }
+    _data = newData;
+    save();
+  }
+
   void save() {
     file.writeAsStringSync(data.saveToString());
     print("Saved " + data.description);
   }
 
-  void _updateFile() {
-    _file = File(
-        join(repertory.directory.path, data.description.replaceAll("/", "-")) +
-            ".txt");
-  }
+  String getFilePath(SongData data, Repertory repertory) =>
+      join(repertory.directory.path, data.description.replaceAll("/", "-")) +
+      ".txt";
 
   void remove() {
     print("should be removing this one right now :/");
   }
 
   Song(SongData data, this.repertory) : _data = data {
-    _updateFile();
+    _file = File(getFilePath(data, repertory));
   }
 }
 
@@ -47,6 +55,13 @@ class SongData {
     return "$t by $artist";
   }
 
+  bool matches(SongData other) {
+    return title == other.title &&
+        artist == other.artist &&
+        setEquals(tags, other.tags) &&
+        lyrichords == other.lyrichords;
+  }
+
   static String artistSortCut(String artist) =>
       artist.toLowerCase().startsWith("the") && artist.length > 7
           ? artist.substring(4)
@@ -55,14 +70,6 @@ class SongData {
   bool hasData() {
     return title.length > 0 || artist.length > 0 || tags.length > 0;
   }
-
-  SongData({
-    @required String title,
-    @required String artist,
-    @required this.tags,
-    this.lyrichords = "",
-  })  : title = title,
-        artist = artist;
 
   String saveToString() {
     return [
@@ -86,6 +93,14 @@ class SongData {
     lyrichords = lines.sublist(4).join("\n");
   }
 
+  SongData({
+    @required String title,
+    @required String artist,
+    @required this.tags,
+    this.lyrichords = "",
+  })  : title = title,
+        artist = artist;
+
   SongData.fromJson(
     Map<String, dynamic> json,
     List<String> tagList,
@@ -96,6 +111,14 @@ class SongData {
           tags: List<int>.from(json["tags"])
               .map((index) => tagList[index])
               .toSet(),
+        );
+
+  SongData.from(SongData source)
+      : this(
+          title: source.title,
+          artist: source.artist,
+          tags: Set.from(source.tags),
+          lyrichords: source.lyrichords,
         );
 }
 

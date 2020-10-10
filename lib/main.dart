@@ -24,11 +24,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-dynamic db(dynamic i) {
-  print(i);
-  return i;
-}
-
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key}) : super(key: key);
 
@@ -45,8 +40,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   int sortMethod = SORT_DATE;
   List<Song> songs = [];
-
-  bool _debugSave = false;
 
   bool isLoading = false;
 
@@ -108,22 +101,8 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Row(
                 children: <Widget>[
                   IconButton(
-                    icon: Icon(Icons.save),
-                    onPressed: () {
-                      save(snackCtx: ctx);
-                    },
-                  ),
-                  IconButton(
                     icon: Icon(Icons.insert_drive_file),
                     onPressed: () => {load()},
-                  ),
-                  Checkbox(
-                    value: _debugSave,
-                    onChanged: (v) {
-                      setState(() {
-                        _debugSave = v;
-                      });
-                    },
                   ),
                   Expanded(
                     child: Container(),
@@ -223,19 +202,6 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<File> file() async {
     var dir = await getExternalStorageDirectory();
     return File("${dir.path}/repertory.fwd");
-  }
-
-  @deprecated
-  void save({BuildContext snackCtx}) async {
-    repertory.songs.forEach((element) {
-      element.save();
-    });
-    if (snackCtx != null) {
-      Scaffold.of(snackCtx).showSnackBar(SnackBar(
-        content: Text("Saved!"),
-        duration: Duration(milliseconds: 1000),
-      ));
-    }
   }
 
   void load() async {
