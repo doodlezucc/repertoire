@@ -87,7 +87,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void refreshSongs() {
-    songs = getSongsSorted();
+    setState(() {
+      songs = getSongsSorted();
+    });
   }
 
   @override
@@ -128,9 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ],
                     onChanged: (i) {
                       sortMethod = i;
-                      setState(() {
-                        refreshSongs();
-                      });
+                      refreshSongs();
                     },
                     value: sortMethod,
                   )
@@ -158,16 +158,10 @@ class _MyHomePageState extends State<MyHomePage> {
                             itemBuilder: (ctx, index) => SongListTile(
                               song: songs[index],
                               onDelete: () {
-                                setState(() {
-                                  songs[index].remove();
-                                  repertory.songs.remove(songs[index]);
-                                  refreshSongs();
-                                });
+                                refreshSongs();
                               },
                               onEdited: () {
-                                setState(() {
-                                  refreshSongs();
-                                });
+                                refreshSongs();
                               },
                             ),
                             itemCount: songs.length,
@@ -204,9 +198,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 song: Song(SongData(title: "", artist: "", tags: {}), repertory,
                     DateTime.now().millisecondsSinceEpoch),
                 isCreation: true))).then((v) {
-      setState(() {
-        refreshSongs();
-      });
+      refreshSongs();
     });
   }
 
@@ -217,15 +209,17 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void load() async {
     isLoading = true;
-    getExternalStorageDirectory().then((dir) {
-      var directory = Directory(path.join(dir.path, "Repertoire"));
+    var extdir = await getExternalStorageDirectory();
+    var directory = Directory(path.join(extdir.path, "Repertoire"));
+    if (!await directory.exists()) {
+      await directory.create();
+    }
+    setState(() {
+      isLoading = false;
       repertory = Repertory(directory);
-      repertory.loadAllSongs((song) {
-        setState(() {
-          isLoading = false;
-          refreshSongs();
-        });
-      });
+    });
+    repertory.loadAllSongs((song) {
+      refreshSongs();
     });
   }
 
@@ -237,9 +231,7 @@ class _MyHomePageState extends State<MyHomePage> {
     String s = await (await file()).readAsString();
     var j = jsonDecode(s);
     repertory = Repertory.fromJson(j, () {
-      setState(() {
-        refreshSongs();
-      });
+      refreshSongs();
     });
   }
 

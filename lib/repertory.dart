@@ -36,7 +36,8 @@ class Song {
       ".txt";
 
   void remove() {
-    print("should be removing this one right now :/");
+    file.delete();
+    repertory.songs.remove(this);
   }
 
   Song(SongData data, this.repertory, this.creationTimestamp) : _data = data {

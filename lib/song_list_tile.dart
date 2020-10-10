@@ -21,7 +21,10 @@ class SongListTile extends StatelessWidget {
       title: Text(song.data.description),
       trailing: IconButton(
         icon: Icon(Icons.delete),
-        onPressed: onDelete,
+        onPressed: () {
+          song.remove();
+          onDelete();
+        },
       ),
       onTap: () {
         Navigator.push(
