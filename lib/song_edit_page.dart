@@ -232,7 +232,17 @@ class _SongEditPageState extends State<SongEditPage> {
                 ],
               ),
             ),
-            Text(data.lyrichords),
+            TextField(
+              maxLines: null,
+              controller: TextEditingController(text: data.lyrichords),
+              autocorrect: false,
+              enableSuggestions: false,
+              onChanged: (s) {
+                print(s.replaceAll(" ", "SPACE"));
+                return data.lyrichords = s;
+              },
+              style: TextStyle(fontFamily: "CourierPrime"),
+            ),
           ],
         ),
         bottomNavigationBar: Container(

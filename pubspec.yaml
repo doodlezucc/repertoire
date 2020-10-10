@@ -48,8 +48,8 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   # assets:
-  #  - images/a_dot_burr.jpeg
   #  - images/a_dot_ham.jpeg
+  #  - images/a_dot_burr.jpeg
   # assets:
   #   - assets/
 
@@ -64,10 +64,13 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: RobotoMono
-  #     fonts:
-  #       - asset: fonts/RobotoMono-Regular.ttf
+  fonts:
+    - family: CourierPrime
+      fonts:
+        - asset: fonts/CourierPrime-Regular.ttf
+    - family: FiraCode
+      fonts:
+        - asset: fonts/FiraCode-Regular.ttf
   
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

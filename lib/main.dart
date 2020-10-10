@@ -213,12 +213,15 @@ class _MyHomePageState extends State<MyHomePage> {
     var directory = Directory(path.join(extdir.path, "Repertoire"));
     if (!await directory.exists()) {
       await directory.create();
+      setState(() {
+        isLoading = false;
+      });
     }
     setState(() {
-      isLoading = false;
       repertory = Repertory(directory);
     });
     repertory.loadAllSongs((song) {
+      isLoading = false;
       refreshSongs();
     });
   }
