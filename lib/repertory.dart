@@ -155,7 +155,7 @@ class Repertory {
   @deprecated
   Repertory.fromJson(Map<String, dynamic> json, void Function() onDone) {
     getExternalStorageDirectory().then((dir) {
-      directory = Directory(join(dir.path, "Repertoir"));
+      directory = Directory(join(dir.path, "Repertoire"));
       directory.createSync(recursive: true);
 
       List<String> tagList = List.from(json["tags"])

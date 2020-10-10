@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Repertoir",
+      title: "Repertoire",
       theme: ThemeData(
         primarySwatch: Colors.red,
       ),
@@ -94,7 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Repertoir"),
+        title: Text("Repertoire"),
       ),
       body: Builder(
         builder: (ctx) => Column(
@@ -218,7 +218,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void load() async {
     isLoading = true;
     getExternalStorageDirectory().then((dir) {
-      var directory = Directory(path.join(dir.path, "Repertoir"));
+      var directory = Directory(path.join(dir.path, "Repertoire"));
       repertory = Repertory(directory);
       repertory.loadAllSongs((song) {
         setState(() {
