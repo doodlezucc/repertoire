@@ -1,6 +1,7 @@
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 import 'package:flutter/material.dart';
 
+import 'lyrichords.dart';
 import 'repertory.dart';
 
 class SongEditPage extends StatefulWidget {
@@ -232,17 +233,7 @@ class _SongEditPageState extends State<SongEditPage> {
                 ],
               ),
             ),
-            TextField(
-              maxLines: null,
-              controller: TextEditingController(text: data.lyrichords),
-              autocorrect: false,
-              enableSuggestions: false,
-              onChanged: (s) {
-                print(s.replaceAll(" ", "SPACE"));
-                return data.lyrichords = s;
-              },
-              style: TextStyle(fontFamily: "CourierPrime"),
-            ),
+            LyrichordsField(data: data),
           ],
         ),
         bottomNavigationBar: Container(
