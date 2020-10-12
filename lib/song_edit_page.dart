@@ -184,56 +184,67 @@ class _SongEditPageState extends State<SongEditPage> {
       },
       child: Scaffold(
         appBar: AppBar(title: Text("Edit song details")),
-        body: ListView(
-          padding: const EdgeInsets.all(8.0),
-          children: <Widget>[
-            Column(
-              // Text fields (title, artist)
-              children: <Widget>[
-                TextField(
-                  controller: TextEditingController(text: data.title),
-                  decoration: InputDecoration(hintText: "Title..."),
-                  textInputAction: TextInputAction.next,
-                  onChanged: (s) => data.title = s,
-                  onSubmitted: (s) {
-                    _artistField.focusNode.requestFocus();
-                  },
-                  autofocus: widget.isCreation,
-                ),
-                _artistField,
-              ],
-            ),
-            Wrap(
-              children: data.tags
-                  .map((tag) => Chip(
-                        label: Text(tag),
-                        deleteIcon: Icon(Icons.cancel),
-                        onDeleted: () {
-                          setState(() {
-                            data.tags.remove(tag);
-                          });
-                        },
-                      ))
-                  .toList(),
-            ),
-            Container(
-              height: 50,
-              child: Row(
+        body: Column(
+          children: [
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(8.0),
                 children: <Widget>[
-                  Expanded(child: _tagAddField),
-                  FlatButton.icon(
-                    icon: Icon(Icons.add_circle),
-                    label: Text("Add"),
-                    onPressed: _tagAddField.controller.text.isEmpty
-                        ? null
-                        : () {
-                            _tagAddField.triggerSubmitted();
-                          },
-                  )
+                  Column(
+                    // Text fields (title, artist)
+                    children: <Widget>[
+                      TextField(
+                        controller: TextEditingController(text: data.title),
+                        decoration: InputDecoration(hintText: "Title..."),
+                        textInputAction: TextInputAction.next,
+                        onChanged: (s) => data.title = s,
+                        onSubmitted: (s) {
+                          _artistField.focusNode.requestFocus();
+                        },
+                        autofocus: widget.isCreation,
+                      ),
+                      _artistField,
+                    ],
+                  ),
+                  Wrap(
+                    children: data.tags
+                        .map((tag) => Chip(
+                              label: Text(tag),
+                              deleteIcon: Icon(Icons.cancel),
+                              onDeleted: () {
+                                setState(() {
+                                  data.tags.remove(tag);
+                                });
+                              },
+                            ))
+                        .toList(),
+                  ),
+                  Container(
+                    height: 50,
+                    child: Row(
+                      children: <Widget>[
+                        Expanded(child: _tagAddField),
+                        FlatButton.icon(
+                          icon: Icon(Icons.add_circle),
+                          label: Text("Add"),
+                          onPressed: _tagAddField.controller.text.isEmpty
+                              ? null
+                              : () {
+                                  _tagAddField.triggerSubmitted();
+                                },
+                        )
+                      ],
+                    ),
+                  ),
+                  LyrichordsField(data: data),
                 ],
               ),
             ),
-            LyrichordsField(data: data),
+            ChordSuggestions(
+              onChordSelected: (c) {
+                print(c.nameAbbreviated);
+              },
+            ),
           ],
         ),
         bottomNavigationBar: Container(

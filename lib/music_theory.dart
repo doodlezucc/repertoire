@@ -118,6 +118,11 @@ class Chord {
 
   Map<String, dynamic> toJson() =>
       {"root": root.name, "type": type.abbreviation};
+
+  @override
+  String toString() {
+    return nameAbbreviated;
+  }
 }
 
 class Pitch extends ClampedPitch {
@@ -130,12 +135,12 @@ class Pitch extends ClampedPitch {
 enum Modification { SHARP, NONE, FLAT }
 
 class ClampedPitch {
-  static const _namesWhite = ["C", "D", "E", "F", "G", "A", "B"];
+  static const whiteKeys = ["C", "D", "E", "F", "G", "A", "B"];
 
   int whiteIndex;
   Modification modification;
 
-  String get name => _namesWhite[whiteIndex] + _modString();
+  String get name => whiteKeys[whiteIndex] + _modString();
   int get pitchInTwelve => (12 + whiteIndex + _modAdd()) % 12;
 
   ClampedPitch(this.whiteIndex, this.modification);
@@ -143,16 +148,16 @@ class ClampedPitch {
   ClampedPitch.c() : this(0, Modification.NONE);
 
   ClampedPitch.parse(String s) {
-    whiteIndex = _namesWhite.indexOf(s[0]);
+    whiteIndex = whiteKeys.indexOf(s[0]);
     modification = s.length < 2
         ? Modification.NONE
-        : (s[1] == "#" ? Modification.SHARP : Modification.FLAT);
+        : (s[1] == "♯" ? Modification.SHARP : Modification.FLAT);
   }
 
   String _modString() {
     return modification == Modification.SHARP
-        ? "#"
-        : (modification == Modification.FLAT ? "b" : "");
+        ? "♯"
+        : (modification == Modification.FLAT ? "♭" : "");
   }
 
   int _modAdd() {
