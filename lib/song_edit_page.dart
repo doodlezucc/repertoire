@@ -156,6 +156,7 @@ class _SongEditPageState extends State<SongEditPage> {
         if (!didChange()) {
           return true;
         }
+        FocusScope.of(context).unfocus();
         return await showDialog(
             context: context,
             builder: (ctx) {
