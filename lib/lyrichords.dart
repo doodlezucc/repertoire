@@ -33,7 +33,8 @@ class _LyrichordsFieldState extends State<LyrichordsField> {
           onChanged: (s) {
             widget.data.lyrichords = s;
           },
-          style: TextStyle(fontFamily: "CourierPrime", fontSize: 13),
+          style: TextStyle(
+              fontFamily: "CourierPrime", fontSize: 14, color: Colors.black),
         ),
       ],
     );
@@ -111,7 +112,7 @@ class TapText {
 
 class Suggestion extends StatefulWidget {
   static const height = 36.0;
-  static const center = height;
+  static const center = height * 0.75;
 
   final TapText main;
   final TapText above;
@@ -145,8 +146,11 @@ class _SuggestionState extends State<Suggestion> {
           widget.main.action();
         },
         child: Container(
-          color: Colors.transparent,
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+          ),
           height: Suggestion.height,
+          clipBehavior: Clip.antiAlias,
           child: !isMultiple
               ? SuggestionTile(widget.main.text, position: 0)
               : NotificationListener<ScrollNotification>(
@@ -189,7 +193,7 @@ class SuggestionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: Suggestion.height,
+      height: Suggestion.height * (position == 0 ? 1 : 0.75),
       width: double.infinity,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
