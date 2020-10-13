@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import 'music_theory.dart';
@@ -5,8 +7,11 @@ import 'repertory.dart';
 
 class LyrichordsField extends StatefulWidget {
   final SongData data;
+  final ChordSuggestionsController chordCtrl;
 
-  const LyrichordsField({Key key, this.data}) : super(key: key);
+  const LyrichordsField(
+      {Key key, @required this.data, @required this.chordCtrl})
+      : super(key: key);
 
   @override
   _LyrichordsFieldState createState() => _LyrichordsFieldState();
@@ -19,10 +24,89 @@ class _LyrichordsFieldState extends State<LyrichordsField> {
   void initState() {
     super.initState();
     ctrl = TextEditingController(text: widget.data.lyrichords);
+    resetChordController();
+    widget.chordCtrl.addListener(() {
+      onChordUpdate();
+    });
+  }
+
+  void onChordUpdate() {
+    //print("Chord update");
+  }
+
+  void resetChordController() {
+    widget.chordCtrl.onPitchSelected = (pitch) {
+      int cursor = ctrl.value.selection.baseOffset + 1;
+
+      String text = "\n" + ctrl.text;
+
+      int lineStart = text.lastIndexOf("\n", cursor - 1) + 1;
+      int indexInLine = cursor - lineStart;
+      int aboveLineStart =
+          (lineStart == 1) ? 0 : (text.lastIndexOf("\n", lineStart - 2) + 1);
+      String aboveLine = text.substring(aboveLineStart, lineStart - 1);
+
+      bool makeNewLine = aboveLineStart == 0;
+
+      if (!makeNewLine && aboveLine.length + 2 > indexInLine) {
+        if (indexInLine > 0) {
+          // make new line only if line doesn't start with two spaces
+          makeNewLine =
+              !(aboveLine + "  ").substring(indexInLine - 1).startsWith("   ");
+        } else {
+          // cursor is at start of line
+          // make new line only if line doesn't start with two spaces
+          makeNewLine = !(aboveLine + "  ").startsWith("  ");
+        }
+      }
+
+      if (makeNewLine) {
+        aboveLineStart += aboveLine.length + 1;
+        aboveLine = (" " * indexInLine) + pitch.name;
+      } else {
+        if (aboveLine.length < indexInLine) {
+          aboveLine += " " * (indexInLine - aboveLine.length) + pitch.name;
+        } else {
+          // merge chord into line above and surround it by spaces
+          String untouchedTail = aboveLine.length >
+                  indexInLine + pitch.name.length + 1
+              ? " " + aboveLine.substring(indexInLine + pitch.name.length + 1)
+              : null;
+          if (indexInLine > 0) {
+            aboveLine =
+                aboveLine.substring(0, indexInLine - 1) + " " + pitch.name;
+          } else {
+            aboveLine = pitch.name;
+          }
+          if (untouchedTail != null) {
+            aboveLine += untouchedTail;
+          }
+        }
+      }
+
+      text = text.substring(0, aboveLineStart) +
+          aboveLine +
+          "\n" +
+          text.substring(lineStart);
+
+      if (text.startsWith("\n")) {
+        text = text.substring(1);
+      }
+      widget.data.lyrichords = text;
+      ctrl.value = TextEditingValue(
+        text: text,
+        selection: TextSelection.collapsed(
+            offset: aboveLineStart + indexInLine + pitch.name.length - 1),
+      );
+    };
+    widget.chordCtrl.onChordSelected = (chord) {
+      widget.chordCtrl.value = ChordSuggestionValue(0);
+    };
   }
 
   @override
   Widget build(BuildContext context) {
+    resetChordController();
     return Column(
       children: [
         TextField(
@@ -42,9 +126,9 @@ class _LyrichordsFieldState extends State<LyrichordsField> {
 }
 
 class ChordSuggestions extends StatefulWidget {
-  final void Function(Chord chord) onChordSelected;
+  final ChordSuggestionsController controller;
 
-  const ChordSuggestions({Key key, @required this.onChordSelected})
+  const ChordSuggestions({Key key, @required this.controller})
       : super(key: key);
 
   @override
@@ -54,7 +138,19 @@ class ChordSuggestions extends StatefulWidget {
 class _ChordSuggestionsState extends State<ChordSuggestions> {
   ClampedPitch pitch;
 
-  int get stage => pitch != null ? (1) : 0;
+  void selectPitch(ClampedPitch p) {
+    pitch = p;
+    widget.controller.value = ChordSuggestionValue(1);
+    widget.controller.onPitchSelected(p);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(() {
+      setState(() {});
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,25 +164,19 @@ class _ChordSuggestionsState extends State<ChordSuggestions> {
       height: Suggestion.height,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: stage == 0
+        children: widget.controller.value.stage == 0
             ? ClampedPitch.whiteKeys.map(
                 (key) {
                   final keyIndex = i++;
                   return Suggestion(
                     main: TapText(key, () {
-                      setState(() {
-                        pitch = ClampedPitch(keyIndex, Modification.NONE);
-                      });
+                      selectPitch(ClampedPitch(keyIndex, Modification.NONE));
                     }),
                     above: TapText("$key♭", () {
-                      setState(() {
-                        pitch = ClampedPitch(keyIndex, Modification.FLAT);
-                      });
+                      selectPitch(ClampedPitch(keyIndex, Modification.FLAT));
                     }),
                     below: TapText("$key♯", () {
-                      setState(() {
-                        pitch = ClampedPitch(keyIndex, Modification.SHARP);
-                      });
+                      selectPitch(ClampedPitch(keyIndex, Modification.SHARP));
                     }),
                   );
                 },
@@ -94,13 +184,26 @@ class _ChordSuggestionsState extends State<ChordSuggestions> {
             : ChordType.values
                 .map((e) => Suggestion(
                       main: TapText(pitch.name + e.abbreviation, () {
-                        widget.onChordSelected(Chord(pitch, e));
+                        widget.controller.onChordSelected(Chord(pitch, e));
                       }),
                     ))
                 .toList(),
       ),
     );
   }
+}
+
+class ChordSuggestionValue {
+  final int stage;
+
+  ChordSuggestionValue(this.stage);
+}
+
+class ChordSuggestionsController extends ValueNotifier<ChordSuggestionValue> {
+  void Function(ClampedPitch pitch) onPitchSelected = (p) {};
+  void Function(Chord chord) onChordSelected = (c) {};
+
+  ChordSuggestionsController() : super(ChordSuggestionValue(0));
 }
 
 class TapText {
@@ -126,8 +229,6 @@ class Suggestion extends StatefulWidget {
 }
 
 class _SuggestionState extends State<Suggestion> {
-  double offset = 0;
-  Offset firstOff;
   ScrollController ctrl;
 
   bool get isMultiple => widget.above != null && widget.below != null;

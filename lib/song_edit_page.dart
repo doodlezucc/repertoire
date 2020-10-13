@@ -20,12 +20,14 @@ class _SongEditPageState extends State<SongEditPage> {
   AutoCompleteTextField<String> _artistField;
   AutoCompleteTextField<String> _tagAddField;
   String tagFieldText = "";
+  ChordSuggestionsController chordCtrl;
 
   void initState() {
     super.initState();
     data = SongData.from(widget.song.data);
     resetArtistField();
     resetTagAddField();
+    chordCtrl = ChordSuggestionsController();
   }
 
   void resetArtistField() {
@@ -236,14 +238,12 @@ class _SongEditPageState extends State<SongEditPage> {
                       ],
                     ),
                   ),
-                  LyrichordsField(data: data),
+                  LyrichordsField(data: data, chordCtrl: chordCtrl),
                 ],
               ),
             ),
             ChordSuggestions(
-              onChordSelected: (c) {
-                print(c.nameAbbreviated);
-              },
+              controller: chordCtrl,
             ),
           ],
         ),
