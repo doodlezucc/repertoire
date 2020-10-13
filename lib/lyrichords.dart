@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 import 'music_theory.dart';
@@ -35,8 +33,12 @@ class _LyrichordsFieldState extends State<LyrichordsField> {
   }
 
   void resetChordController() {
-    widget.chordCtrl.onPitchSelected = (pitch) {
+    widget.chordCtrl.onPitchSelected = (pitch) {};
+    widget.chordCtrl.onChordSelected = (chord) {
+      widget.chordCtrl.value = ChordSuggestionValue(0);
       int cursor = ctrl.value.selection.baseOffset + 1;
+
+      String name = chord.nameAbbreviated;
 
       String text = "\n" + ctrl.text;
 
@@ -62,21 +64,20 @@ class _LyrichordsFieldState extends State<LyrichordsField> {
 
       if (makeNewLine) {
         aboveLineStart += aboveLine.length + 1;
-        aboveLine = (" " * indexInLine) + pitch.name;
+        aboveLine = (" " * indexInLine) + name;
       } else {
         if (aboveLine.length < indexInLine) {
-          aboveLine += " " * (indexInLine - aboveLine.length) + pitch.name;
+          aboveLine += " " * (indexInLine - aboveLine.length) + name;
         } else {
           // merge chord into line above and surround it by spaces
-          String untouchedTail = aboveLine.length >
-                  indexInLine + pitch.name.length + 1
-              ? " " + aboveLine.substring(indexInLine + pitch.name.length + 1)
-              : null;
+          String untouchedTail =
+              aboveLine.length > indexInLine + name.length + 1
+                  ? " " + aboveLine.substring(indexInLine + name.length + 1)
+                  : null;
           if (indexInLine > 0) {
-            aboveLine =
-                aboveLine.substring(0, indexInLine - 1) + " " + pitch.name;
+            aboveLine = aboveLine.substring(0, indexInLine - 1) + " " + name;
           } else {
-            aboveLine = pitch.name;
+            aboveLine = name;
           }
           if (untouchedTail != null) {
             aboveLine += untouchedTail;
@@ -96,11 +97,8 @@ class _LyrichordsFieldState extends State<LyrichordsField> {
       ctrl.value = TextEditingValue(
         text: text,
         selection: TextSelection.collapsed(
-            offset: aboveLineStart + indexInLine + pitch.name.length - 1),
+            offset: aboveLineStart + indexInLine + name.length - 1),
       );
-    };
-    widget.chordCtrl.onChordSelected = (chord) {
-      widget.chordCtrl.value = ChordSuggestionValue(0);
     };
   }
 
