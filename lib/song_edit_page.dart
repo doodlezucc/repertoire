@@ -1,9 +1,10 @@
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 import 'package:flutter/material.dart';
-import 'package:repertories/keyboard_visibility.dart';
 
+import 'keyboard_visibility.dart';
 import 'lyrichords.dart';
 import 'repertory.dart';
+import 'web_extractors/ug.dart';
 
 class SongEditPage extends StatefulWidget {
   final Song song;
@@ -32,6 +33,13 @@ class _SongEditPageState extends State<SongEditPage> {
     focusNode.addListener(() {
       setState(() {});
     });
+  }
+
+  void scrapeLyrichords() {
+    UGScraper.findLyrichords(data).then((value) => setState(() {
+          data.lyrichords = value;
+          chordCtrl.value = ChordSuggestionValue(chordCtrl.value.stage);
+        }));
   }
 
   void resetArtistField() {
@@ -243,6 +251,11 @@ class _SongEditPageState extends State<SongEditPage> {
                           )
                         ],
                       ),
+                    ),
+                    FlatButton.icon(
+                      icon: Icon(Icons.get_app),
+                      label: Text("Download Lyrichords"),
+                      onPressed: scrapeLyrichords,
                     ),
                     LyrichordsField(
                       data: data,

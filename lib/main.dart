@@ -238,14 +238,14 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void printWrapped(String text) {
-    final pattern = new RegExp('.{1,800}'); // 800 is the size of each chunk
-    pattern.allMatches(text).forEach((match) => print(match.group(0)));
-  }
-
   void printJson(var j) {
     JsonEncoder encoder = new JsonEncoder.withIndent("  ");
     String prettyprint = encoder.convert(j);
     printWrapped(prettyprint);
   }
+}
+
+void printWrapped(String text) {
+  final pattern = new RegExp('.{1,800}'); // 800 is the size of each chunk
+  pattern.allMatches(text).forEach((match) => print(match.group(0)));
 }

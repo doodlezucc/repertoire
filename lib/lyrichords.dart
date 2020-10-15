@@ -31,6 +31,9 @@ class _LyrichordsFieldState extends State<LyrichordsField> {
 
   void onChordUpdate() {
     //print("Chord update");
+    setState(() {
+      ctrl.text = widget.data.lyrichords;
+    });
   }
 
   void resetChordController() {
