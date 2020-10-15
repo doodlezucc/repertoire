@@ -188,50 +188,44 @@ class _ChordSuggestionsState extends State<ChordSuggestions> {
 
   @override
   Widget build(BuildContext context) {
-    //if (!widget.visible) return Container();
+    if (!widget.visible) return SizedBox.shrink();
 
     int i = 0;
 
-    return AnimatedOpacity(
-        opacity: widget.visible ? 1 : 0,
-        duration: Duration(milliseconds: widget.visible ? 500 : 0),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [BoxShadow(blurRadius: 5, color: Colors.black26)],
-          ),
-          height: Suggestion.height,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: widget.controller.value.stage == 0
-                ? ClampedPitch.whiteKeys.map(
-                    (key) {
-                      final keyIndex = i++;
-                      return Suggestion(
-                        main: TapText(key, () {
-                          selectPitch(
-                              ClampedPitch(keyIndex, Modification.NONE));
-                        }),
-                        above: TapText("$key♭", () {
-                          selectPitch(
-                              ClampedPitch(keyIndex, Modification.FLAT));
-                        }),
-                        below: TapText("$key♯", () {
-                          selectPitch(
-                              ClampedPitch(keyIndex, Modification.SHARP));
-                        }),
-                      );
-                    },
-                  ).toList()
-                : ChordType.values
-                    .map((e) => Suggestion(
-                          main: TapText(pitch.name + e.abbreviation, () {
-                            widget.controller.onChordSelected(Chord(pitch, e));
-                          }),
-                        ))
-                    .toList(),
-          ),
-        ));
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [BoxShadow(blurRadius: 5, color: Colors.black26)],
+      ),
+      height: Suggestion.height,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: widget.controller.value.stage == 0
+            ? ClampedPitch.whiteKeys.map(
+                (key) {
+                  final keyIndex = i++;
+                  return Suggestion(
+                    main: TapText(key, () {
+                      selectPitch(ClampedPitch(keyIndex, Modification.NONE));
+                    }),
+                    above: TapText("$key♭", () {
+                      selectPitch(ClampedPitch(keyIndex, Modification.FLAT));
+                    }),
+                    below: TapText("$key♯", () {
+                      selectPitch(ClampedPitch(keyIndex, Modification.SHARP));
+                    }),
+                  );
+                },
+              ).toList()
+            : ChordType.values
+                .map((e) => Suggestion(
+                      main: TapText(pitch.name + e.abbreviation, () {
+                        widget.controller.onChordSelected(Chord(pitch, e));
+                      }),
+                    ))
+                .toList(),
+      ),
+    );
   }
 }
 
