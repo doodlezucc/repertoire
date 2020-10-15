@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:repertories/music_theory.dart';
+
+import 'music_theory.dart';
 
 class ChordField extends StatelessWidget {
   final Chord value;

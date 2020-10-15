@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:repertories/song_edit_page.dart';
 
 import 'repertory.dart';
+import 'song_edit_page.dart';
 
 class SongListTile extends StatelessWidget {
   final Song song;

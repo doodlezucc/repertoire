@@ -1,5 +1,6 @@
 import 'package:http/http.dart' as http;
-import 'package:repertories/repertory.dart';
+
+import '../repertory.dart';
 
 class UGScraper {
   static Future<String> findLyrichords(SongData data) async {
@@ -15,9 +16,9 @@ class UGScraper {
     return await scrapeLyrichords(s);
   }
 
-  static Future<String> scrapeLyrichords(String url) async {
-    print("Scraping $url");
-    var response = await http.get(url);
+  static Future<String> scrapeLyrichords(String ugUrl) async {
+    print("Scraping $ugUrl");
+    var response = await http.get(ugUrl);
     print('Response status: ${response.statusCode}');
 
     var s = response.body;
