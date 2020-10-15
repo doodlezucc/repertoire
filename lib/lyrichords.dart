@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import 'music_theory.dart';
@@ -32,7 +34,10 @@ class _LyrichordsFieldState extends State<LyrichordsField> {
   void onChordUpdate() {
     //print("Chord update");
     setState(() {
-      ctrl.text = widget.data.lyrichords;
+      ctrl.value = TextEditingValue(
+          text: widget.data.lyrichords,
+          composing: ctrl.value.composing,
+          selection: ctrl.value.selection);
     });
   }
 
@@ -106,20 +111,48 @@ class _LyrichordsFieldState extends State<LyrichordsField> {
     };
   }
 
+  int getLongestLine() {
+    return widget.data.lyrichords
+        .split("\n")
+        .fold(0, (len, line) => max(len, line.length));
+  }
+
   @override
   Widget build(BuildContext context) {
     resetChordController();
-    return TextField(
-      maxLines: null,
-      controller: ctrl,
-      autocorrect: false,
-      enableSuggestions: false,
-      focusNode: widget.focusNode,
-      onChanged: (s) {
-        widget.data.lyrichords = s;
-      },
-      style: TextStyle(
-          fontFamily: "CourierPrime", fontSize: 14, color: Colors.black),
+    double fontSize = 14;
+    double charWidth = fontSize * 0.603;
+    double inset = 10;
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Container(
+        constraints: BoxConstraints(
+          minWidth: MediaQuery.of(context).size.width,
+        ),
+        width: charWidth * getLongestLine() + inset * 2.25,
+        child: TextField(
+          minLines: 3,
+          maxLines: null,
+          controller: ctrl,
+          autocorrect: false,
+          enableSuggestions: false,
+          focusNode: widget.focusNode,
+          onChanged: (s) {
+            setState(() {
+              widget.data.lyrichords = s;
+            });
+          },
+          cursorColor: Colors.black,
+          decoration: InputDecoration(
+            contentPadding:
+                EdgeInsets.symmetric(horizontal: inset, vertical: 10),
+          ),
+          style: TextStyle(
+              fontFamily: "CourierPrime",
+              fontSize: fontSize,
+              color: Colors.black),
+        ),
+      ),
     );
   }
 }
