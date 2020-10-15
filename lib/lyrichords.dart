@@ -130,27 +130,30 @@ class _LyrichordsFieldState extends State<LyrichordsField> {
           minWidth: MediaQuery.of(context).size.width,
         ),
         width: charWidth * getLongestLine() + inset * 2.25,
-        child: TextField(
-          minLines: 3,
-          maxLines: null,
-          controller: ctrl,
-          autocorrect: false,
-          enableSuggestions: false,
-          focusNode: widget.focusNode,
-          onChanged: (s) {
-            setState(() {
-              widget.data.lyrichords = s;
-            });
-          },
-          cursorColor: Colors.black,
-          decoration: InputDecoration(
-            contentPadding:
-                EdgeInsets.symmetric(horizontal: inset, vertical: 10),
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 8.0),
+          child: TextField(
+            minLines: 3,
+            maxLines: null,
+            controller: ctrl,
+            autocorrect: false,
+            enableSuggestions: false,
+            focusNode: widget.focusNode,
+            onChanged: (s) {
+              setState(() {
+                widget.data.lyrichords = s;
+              });
+            },
+            cursorColor: Colors.black,
+            decoration: InputDecoration(
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: inset, vertical: 10),
+            ),
+            style: TextStyle(
+                fontFamily: "CourierPrime",
+                fontSize: fontSize,
+                color: Colors.black),
           ),
-          style: TextStyle(
-              fontFamily: "CourierPrime",
-              fontSize: fontSize,
-              color: Colors.black),
         ),
       ),
     );

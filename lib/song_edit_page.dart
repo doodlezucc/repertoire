@@ -204,58 +204,75 @@ class _SongEditPageState extends State<SongEditPage> {
             children: [
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.all(8.0),
                   children: <Widget>[
-                    Column(
-                      // Text fields (title, artist)
-                      children: <Widget>[
-                        TextField(
-                          controller: TextEditingController(text: data.title),
-                          decoration: InputDecoration(hintText: "Title..."),
-                          textInputAction: TextInputAction.next,
-                          onChanged: (s) => data.title = s,
-                          onSubmitted: (s) {
-                            _artistField.focusNode.requestFocus();
-                          },
-                          autofocus: widget.isCreation,
-                        ),
-                        _artistField,
-                      ],
-                    ),
-                    Wrap(
-                      children: data.tags
-                          .map((tag) => Chip(
-                                label: Text(tag),
-                                deleteIcon: Icon(Icons.cancel),
-                                onDeleted: () {
-                                  setState(() {
-                                    data.tags.remove(tag);
-                                  });
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0)
+                          .copyWith(top: 4.0),
+                      child: Column(
+                        children: [
+                          Column(
+                            // Text fields (title, artist)
+                            children: <Widget>[
+                              TextField(
+                                controller:
+                                    TextEditingController(text: data.title),
+                                decoration:
+                                    InputDecoration(hintText: "Title..."),
+                                textInputAction: TextInputAction.next,
+                                onChanged: (s) => data.title = s,
+                                onSubmitted: (s) {
+                                  _artistField.focusNode.requestFocus();
                                 },
-                              ))
-                          .toList(),
-                    ),
-                    Container(
-                      height: 50,
-                      child: Row(
-                        children: <Widget>[
-                          Expanded(child: _tagAddField),
+                                autofocus: widget.isCreation,
+                              ),
+                              _artistField,
+                            ],
+                          ),
+                          Wrap(
+                            children: data.tags
+                                .map((tag) => Chip(
+                                      label: Text(tag),
+                                      deleteIcon: Icon(Icons.cancel),
+                                      onDeleted: () {
+                                        setState(() {
+                                          data.tags.remove(tag);
+                                        });
+                                      },
+                                    ))
+                                .toList(),
+                          ),
+                          Container(
+                            height: 50,
+                            child: Row(
+                              children: <Widget>[
+                                Expanded(child: _tagAddField),
+                                FlatButton.icon(
+                                  icon: Icon(Icons.add_circle),
+                                  label: Text("Add"),
+                                  onPressed:
+                                      _tagAddField.controller.text.isEmpty
+                                          ? null
+                                          : () {
+                                              _tagAddField.triggerSubmitted();
+                                            },
+                                )
+                              ],
+                            ),
+                          ),
                           FlatButton.icon(
-                            icon: Icon(Icons.add_circle),
-                            label: Text("Add"),
-                            onPressed: _tagAddField.controller.text.isEmpty
-                                ? null
-                                : () {
-                                    _tagAddField.triggerSubmitted();
-                                  },
-                          )
+                            icon: Icon(Icons.get_app),
+                            label: Text("Download chords and lyrics"),
+                            onPressed: scrapeLyrichords,
+                            shape: StadiumBorder(),
+                            color: Colors.red[400],
+                            textColor: Colors.white,
+                          ),
+                          Divider(
+                            color: Colors.grey[700],
+                            height: 2,
+                          ),
                         ],
                       ),
-                    ),
-                    FlatButton.icon(
-                      icon: Icon(Icons.get_app),
-                      label: Text("Download Lyrichords"),
-                      onPressed: scrapeLyrichords,
                     ),
                     LyrichordsField(
                       data: data,
