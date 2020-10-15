@@ -17,6 +17,64 @@ class SongEditPage extends StatefulWidget {
   _SongEditPageState createState() => _SongEditPageState();
 }
 
+class DownloadButton extends StatefulWidget {
+  final SongData data;
+  final void Function() onDownloaded;
+
+  const DownloadButton({Key key, this.data, this.onDownloaded})
+      : super(key: key);
+
+  @override
+  _DownloadButtonState createState() => _DownloadButtonState();
+}
+
+class _DownloadButtonState extends State<DownloadButton> {
+  bool isDownloading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return FlatButton.icon(
+      icon: isDownloading
+          ? SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                valueColor: AlwaysStoppedAnimation(Colors.white),
+              ))
+          : Icon(Icons.get_app),
+      label: Text("Download chords and lyrics"),
+      onPressed: isDownloading ? null : findLyrichords,
+      shape: StadiumBorder(),
+      color: Theme.of(context).accentColor,
+      textColor: Colors.white,
+      disabledTextColor: Colors.white,
+      disabledColor: Theme.of(context).backgroundColor,
+    );
+  }
+
+  void findLyrichords() {
+    setState(() {
+      isDownloading = true;
+    });
+    UGScraper.findLyrichords(widget.data).then((value) {
+      if (value is String) {
+        setState(() {
+          isDownloading = false;
+          widget.data.lyrichords = value;
+          widget.onDownloaded();
+        });
+      } else {
+        setState(() {
+          isDownloading = false;
+          Scaffold.of(context).showSnackBar(
+              SnackBar(content: Text("Error: " + value.toString())));
+        });
+      }
+    });
+  }
+}
+
 class _SongEditPageState extends State<SongEditPage> {
   SongData data;
   AutoCompleteTextField<String> _artistField;
@@ -33,13 +91,6 @@ class _SongEditPageState extends State<SongEditPage> {
     focusNode.addListener(() {
       setState(() {});
     });
-  }
-
-  void scrapeLyrichords() {
-    UGScraper.findLyrichords(data).then((value) => setState(() {
-          data.lyrichords = value;
-          chordCtrl.value = ChordSuggestionValue(chordCtrl.value.stage);
-        }));
   }
 
   void resetArtistField() {
@@ -191,7 +242,7 @@ class _SongEditPageState extends State<SongEditPage> {
                       onPressed: () {
                         Navigator.pop(ctx, true);
                       },
-                    )
+                    ),
                   ],
                 ),
               );
@@ -259,13 +310,12 @@ class _SongEditPageState extends State<SongEditPage> {
                               ],
                             ),
                           ),
-                          FlatButton.icon(
-                            icon: Icon(Icons.get_app),
-                            label: Text("Download chords and lyrics"),
-                            onPressed: scrapeLyrichords,
-                            shape: StadiumBorder(),
-                            color: Colors.red[400],
-                            textColor: Colors.white,
+                          DownloadButton(
+                            data: data,
+                            onDownloaded: () {
+                              chordCtrl.value =
+                                  ChordSuggestionValue(chordCtrl.value.stage);
+                            },
                           ),
                           Divider(
                             color: Colors.grey[700],

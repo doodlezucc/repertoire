@@ -122,7 +122,7 @@ class _LyrichordsFieldState extends State<LyrichordsField> {
     resetChordController();
     double fontSize = 14;
     double charWidth = fontSize * 0.603;
-    double inset = 10;
+    double inset = 12;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Container(
@@ -133,7 +133,6 @@ class _LyrichordsFieldState extends State<LyrichordsField> {
         child: Padding(
           padding: const EdgeInsets.only(bottom: 8.0),
           child: TextField(
-            minLines: 3,
             maxLines: null,
             controller: ctrl,
             autocorrect: false,
@@ -148,6 +147,7 @@ class _LyrichordsFieldState extends State<LyrichordsField> {
             decoration: InputDecoration(
               contentPadding:
                   EdgeInsets.symmetric(horizontal: inset, vertical: 10),
+              hintText: "Write some lyrics or chords here...",
             ),
             style: TextStyle(
                 fontFamily: "CourierPrime",
