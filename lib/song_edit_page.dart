@@ -260,6 +260,7 @@ class _SongEditPageState extends State<SongEditPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 8.0)
                           .copyWith(top: 4.0),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Column(
                             // Text fields (title, artist)
@@ -310,17 +311,6 @@ class _SongEditPageState extends State<SongEditPage> {
                               ],
                             ),
                           ),
-                          DownloadButton(
-                            data: data,
-                            onDownloaded: () {
-                              chordCtrl.value =
-                                  ChordSuggestionValue(chordCtrl.value.stage);
-                            },
-                          ),
-                          Divider(
-                            color: Colors.grey[700],
-                            height: 2,
-                          ),
                         ],
                       ),
                     ),
@@ -328,6 +318,15 @@ class _SongEditPageState extends State<SongEditPage> {
                       data: data,
                       chordCtrl: chordCtrl,
                       focusNode: focusNode,
+                    ),
+                    Center(
+                      child: DownloadButton(
+                        data: data,
+                        onDownloaded: () {
+                          chordCtrl.value =
+                              ChordSuggestionValue(chordCtrl.value.stage);
+                        },
+                      ),
                     ),
                   ],
                 ),

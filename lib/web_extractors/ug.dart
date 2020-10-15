@@ -52,9 +52,10 @@ class UGScraper {
       }
 
       s = s.replaceAll("\\r\\n", "\n");
-      s = s.replaceAll(new RegExp(r"\[(.*?)ch\]"), "");
+      s = s.replaceAll(new RegExp(r"\[\/?(ch|tab)\]"), "");
       s = s.replaceAll("[/tab]", "");
       s = s.replaceAll("&quot;", "\"");
+      s = s.replaceAll("&rsquo;", "\'");
       s = s.replaceAll("\\", "");
 
       return s.trim();
