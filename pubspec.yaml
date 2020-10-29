@@ -29,6 +29,7 @@ dependencies:
   path:
   image:
   http:
+  html_unescape: ^1.0.2
 
 dev_dependencies:
   flutter_test:

@@ -57,7 +57,9 @@ class _DownloadButtonState extends State<DownloadButton> {
     setState(() {
       isDownloading = true;
     });
-    UGScraper.findLyrichords(widget.data).then((value) {
+    UGScraper.findLyrichords(widget.data.title, widget.data.artist,
+            chords: true)
+        .then((value) {
       if (value is String) {
         setState(() {
           isDownloading = false;
