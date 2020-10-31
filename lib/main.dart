@@ -17,8 +17,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: "Repertoire",
       theme: ThemeData(
-        primarySwatch: Colors.red,
-      ),
+          primarySwatch: Colors.red,
+          textTheme: TextTheme(
+            overline: TextStyle(
+              fontFamily: "FiraCode",
+              fontSize: 10,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          )),
       home: MyHomePage(),
     );
   }

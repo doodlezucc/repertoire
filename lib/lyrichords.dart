@@ -120,8 +120,8 @@ class _LyrichordsFieldState extends State<LyrichordsField> {
   @override
   Widget build(BuildContext context) {
     resetChordController();
-    double fontSize = 11;
-    double charWidth = fontSize * 0.603;
+    var textStyle = Theme.of(context).textTheme.overline;
+    double charWidth = textStyle.fontSize * 0.76;
     double inset = 12;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -143,20 +143,17 @@ class _LyrichordsFieldState extends State<LyrichordsField> {
                 widget.data.lyrichords = s;
               });
             },
-            cursorColor: Colors.black,
+            cursorColor: textStyle.color,
             decoration: InputDecoration(
-              isDense: true,
-              isCollapsed: true,
+              border: InputBorder.none,
+              filled: true,
+              fillColor: Colors.grey[800],
               contentPadding:
                   EdgeInsets.symmetric(horizontal: inset, vertical: 10),
               hintText: "Write some lyrics or chords here...",
+              hintStyle: TextStyle(color: Colors.grey[200]),
             ),
-            style: TextStyle(
-              fontFamily: "CourierPrime",
-              fontSize: fontSize,
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-            ),
+            style: textStyle,
           ),
         ),
       ),

@@ -19,6 +19,7 @@ class GeniusScraper {
     } catch (e) {
       return WebError('Can\'t download site!');
     }
+    return WebError('Lyrics extraction failed!');
   }
 
   static String extractFromString(String s) {
