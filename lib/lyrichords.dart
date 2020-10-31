@@ -147,11 +147,11 @@ class _LyrichordsFieldState extends State<LyrichordsField> {
             decoration: InputDecoration(
               border: InputBorder.none,
               filled: true,
-              fillColor: Colors.grey[800],
+              fillColor: Colors.grey[300],
               contentPadding:
                   EdgeInsets.symmetric(horizontal: inset, vertical: 10),
               hintText: "Write some lyrics or chords here...",
-              hintStyle: TextStyle(color: Colors.grey[200]),
+              hintStyle: TextStyle(color: Colors.grey[800]),
             ),
             style: textStyle,
           ),

@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
             overline: TextStyle(
               fontFamily: "FiraCode",
               fontSize: 10,
-              color: Colors.white,
+              color: Colors.black,
               fontWeight: FontWeight.bold,
             ),
           )),
