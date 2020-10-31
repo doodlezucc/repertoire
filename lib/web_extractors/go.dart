@@ -19,6 +19,7 @@ class WebError implements Error {
 
 class GoScraper {
   static Future<dynamic> getFirstResult(String query, String site) async {
+    query = query.replaceAll(RegExp(r'\(([^)]+)\)'), '').trim();
     try {
       var uri = Uri.https('www.google.com', '/search', {
         'q': '$query site:$site',
