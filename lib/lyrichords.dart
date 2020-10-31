@@ -120,7 +120,7 @@ class _LyrichordsFieldState extends State<LyrichordsField> {
   @override
   Widget build(BuildContext context) {
     resetChordController();
-    double fontSize = 14;
+    double fontSize = 11;
     double charWidth = fontSize * 0.603;
     double inset = 12;
     return SingleChildScrollView(
@@ -152,9 +152,11 @@ class _LyrichordsFieldState extends State<LyrichordsField> {
               hintText: "Write some lyrics or chords here...",
             ),
             style: TextStyle(
-                fontFamily: "CourierPrime",
-                fontSize: fontSize,
-                color: Colors.black),
+              fontFamily: "CourierPrime",
+              fontSize: fontSize,
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),

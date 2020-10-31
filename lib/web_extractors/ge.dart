@@ -8,9 +8,16 @@ class GeniusScraper {
     if (resultUrl is WebError) return resultUrl;
 
     try {
-      return extractFromString(await download(resultUrl));
+      for (int i = 0; i < 3; i++) {
+        var html = await download(resultUrl);
+        try {
+          return extractFromString(html);
+        } catch (e) {
+          print(e);
+        }
+      }
     } catch (e) {
-      return WebError('Can\'t extract correctly!');
+      return WebError('Can\'t download site!');
     }
   }
 
@@ -18,10 +25,6 @@ class GeniusScraper {
     s = s.substring(s.indexOf('s="ly'));
     s = s.substring(s.indexOf('<p>') + 3);
     s = s.substring(0, s.indexOf('</p>'));
-
-    //s = s.replaceAll('\n', '');
-
-    //s = s.split('<br>').map((line) => line.trim()).join('\n');
 
     s = s.replaceAll(RegExp(r'<[\S\s]*?>'), '');
 
