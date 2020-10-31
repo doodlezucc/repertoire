@@ -1,49 +1,17 @@
 import 'package:html_unescape/html_unescape_small.dart';
-import 'package:http/http.dart' as http;
-
-class WebError implements Error {
-  final String msg;
-
-  WebError(this.msg);
-
-  @override
-  StackTrace get stackTrace => null;
-  @override
-  String toString() => msg;
-}
+import 'package:repertoire/web_extractors/go.dart';
 
 class UGScraper {
   static Future<dynamic> findLyrichords(String title, String artist,
-      {bool chords}) async {
+      {bool chords = true}) async {
+    var resultUrl = await GoScraper.getFirstResult(
+        '$title $artist' + (chords ? ' chords' : ''),
+        'tabs.ultimate-guitar.com');
+
+    if (resultUrl is WebError) return resultUrl;
+
     try {
-      print('Searching for $title by $artist');
-      var uri = Uri.https('www.google.com', '/search', {
-        'q': artist +
-            ' ' +
-            title +
-            (chords ? ' chords' : '') +
-            ' site:tabs.ultimate-guitar.com',
-      });
-      print(uri);
-      var response = await http.get(uri);
-      print(response.statusCode);
-      var s = response.body;
-      s = s.substring(s.indexOf('<a href="/url') + 16);
-      s = s.substring(0, s.indexOf('&amp;'));
-
-      return await scrapeLyrichords(s);
-    } catch (e) {
-      return WebError('Can\'t connect to search engine!');
-    }
-  }
-
-  static Future<dynamic> scrapeLyrichords(String ugUrl) async {
-    try {
-      print('Scraping $ugUrl');
-      var response = await http.get(ugUrl);
-      print('Response status: ${response.statusCode}');
-
-      return extractFromString(response.body);
+      return extractFromString(await download(resultUrl));
     } catch (e) {
       return WebError('Can\'t extract correctly!');
     }
@@ -68,10 +36,7 @@ class UGScraper {
     s = s.replaceAll('[/tab]', '');
 
     s = HtmlUnescape().convert(s);
-
-    //s = s.replaceAll('&quot;', '\'');
     s = s.replaceAll('&rsquo;', '\'');
-    //s = s.replaceAll('\\', '');
 
     return s.trim();
   }

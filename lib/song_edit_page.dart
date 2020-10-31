@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'keyboard_visibility.dart';
 import 'lyrichords.dart';
 import 'repertory.dart';
+import 'web_extractors/ge.dart';
 import 'web_extractors/ug.dart';
 
 class SongEditPage extends StatefulWidget {
@@ -20,8 +21,9 @@ class SongEditPage extends StatefulWidget {
 class DownloadButton extends StatefulWidget {
   final SongData data;
   final void Function() onDownloaded;
+  final bool withChords;
 
-  const DownloadButton({Key key, this.data, this.onDownloaded})
+  const DownloadButton({Key key, this.data, this.onDownloaded, this.withChords})
       : super(key: key);
 
   @override
@@ -43,7 +45,7 @@ class _DownloadButtonState extends State<DownloadButton> {
                 valueColor: AlwaysStoppedAnimation(Colors.white),
               ))
           : Icon(Icons.get_app),
-      label: Text("Download chords and lyrics"),
+      label: Text("Lyrics" + (widget.withChords ? " with chords" : "")),
       onPressed: isDownloading ? null : findLyrichords,
       shape: StadiumBorder(),
       color: Theme.of(context).accentColor,
@@ -53,27 +55,34 @@ class _DownloadButtonState extends State<DownloadButton> {
     );
   }
 
-  void findLyrichords() {
+  void findLyrichords() async {
     setState(() {
       isDownloading = true;
     });
-    UGScraper.findLyrichords(widget.data.title, widget.data.artist,
-            chords: true)
-        .then((value) {
-      if (value is String) {
-        setState(() {
-          isDownloading = false;
-          widget.data.lyrichords = value;
-          widget.onDownloaded();
-        });
-      } else {
-        setState(() {
-          isDownloading = false;
-          Scaffold.of(context).showSnackBar(
-              SnackBar(content: Text("Error: " + value.toString())));
-        });
-      }
-    });
+
+    String title = widget.data.title;
+    String artist = widget.data.artist;
+
+    var result;
+
+    if (widget.withChords)
+      result = await UGScraper.findLyrichords(title, artist);
+    else
+      result = await GeniusScraper.findLyrics(title, artist);
+
+    if (result is String) {
+      setState(() {
+        isDownloading = false;
+        widget.data.lyrichords = result;
+        widget.onDownloaded();
+      });
+    } else {
+      setState(() {
+        isDownloading = false;
+        Scaffold.of(context).showSnackBar(
+            SnackBar(content: Text("Error: " + result.toString())));
+      });
+    }
   }
 }
 
@@ -214,6 +223,10 @@ class _SongEditPageState extends State<SongEditPage> {
     widget.song.setData(data, isCreation: widget.isCreation);
   }
 
+  void onDownloaded() {
+    chordCtrl.value = ChordSuggestionValue(chordCtrl.value.stage);
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -322,12 +335,22 @@ class _SongEditPageState extends State<SongEditPage> {
                       focusNode: focusNode,
                     ),
                     Center(
-                      child: DownloadButton(
-                        data: data,
-                        onDownloaded: () {
-                          chordCtrl.value =
-                              ChordSuggestionValue(chordCtrl.value.stage);
-                        },
+                      child: Row(
+                        children: [
+                          Expanded(child: Container()),
+                          DownloadButton(
+                            data: data,
+                            onDownloaded: onDownloaded,
+                            withChords: false,
+                          ),
+                          Expanded(child: Container()),
+                          DownloadButton(
+                            data: data,
+                            onDownloaded: onDownloaded,
+                            withChords: true,
+                          ),
+                          Expanded(child: Container()),
+                        ],
                       ),
                     ),
                   ],

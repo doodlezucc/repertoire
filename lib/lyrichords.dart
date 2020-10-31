@@ -145,6 +145,8 @@ class _LyrichordsFieldState extends State<LyrichordsField> {
             },
             cursorColor: Colors.black,
             decoration: InputDecoration(
+              isDense: true,
+              isCollapsed: true,
               contentPadding:
                   EdgeInsets.symmetric(horizontal: inset, vertical: 10),
               hintText: "Write some lyrics or chords here...",
