@@ -2,23 +2,23 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import 'music_theory.dart';
-import 'repertory.dart';
+import '../music_theory.dart';
+import '../repertory.dart';
 
-class LyrichordsField extends StatefulWidget {
+class LyrichordsEditField extends StatefulWidget {
   final SongData data;
   final ChordSuggestionsController chordCtrl;
   final FocusNode focusNode;
 
-  const LyrichordsField(
+  const LyrichordsEditField(
       {Key key, @required this.data, @required this.chordCtrl, this.focusNode})
       : super(key: key);
 
   @override
-  _LyrichordsFieldState createState() => _LyrichordsFieldState();
+  _LyrichordsEditFieldState createState() => _LyrichordsEditFieldState();
 }
 
-class _LyrichordsFieldState extends State<LyrichordsField> {
+class _LyrichordsEditFieldState extends State<LyrichordsEditField> {
   TextEditingController ctrl;
 
   @override

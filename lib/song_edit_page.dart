@@ -2,7 +2,8 @@ import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 import 'package:flutter/material.dart';
 
 import 'keyboard_visibility.dart';
-import 'lyrichords.dart';
+import 'lyrichords/display.dart';
+import 'lyrichords/edit.dart';
 import 'repertory.dart';
 import 'web_extractors/ge.dart';
 import 'web_extractors/ug.dart';
@@ -335,11 +336,17 @@ class _SongEditPageState extends State<SongEditPage> {
                         child: Text('Notes'),
                       ),
                     ),
-                    LyrichordsField(
+                    LyrichordsDisplayField(
                       data: data,
-                      chordCtrl: chordCtrl,
-                      focusNode: focusNode,
+                      style: TextStyle(
+                        fontSize: 17,
+                      ),
                     ),
+                    // LyrichordsEditField(
+                    //   data: data,
+                    //   chordCtrl: chordCtrl,
+                    //   focusNode: focusNode,
+                    // ),
                     Center(
                       child: Row(
                         children: [
