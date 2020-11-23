@@ -41,12 +41,6 @@ class _LyrichordsEditFieldState extends State<LyrichordsEditField> {
     });
   }
 
-  static bool containsChords(String s) {
-    // Based on https://stackoverflow.com/a/29146707/10258754
-    return s.contains(
-        "(^| )([A-G](##?|bb?)?((m|sus|maj|min|aug|dim)\d?)?(\/[A-G](##?|bb?)?)?)( (?!\\w)|\$)");
-  }
-
   void resetChordController() {
     widget.chordCtrl.onPitchSelected = (pitch) {};
     widget.chordCtrl.onChordSelected = (chord) {

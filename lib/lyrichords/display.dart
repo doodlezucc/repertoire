@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../music_theory.dart';
 import '../repertory.dart';
 import 'text_size.dart';
 
@@ -21,31 +22,39 @@ class _LyrichordsDisplayFieldState extends State<LyrichordsDisplayField> {
     super.initState();
   }
 
+  TextStyle get baseStyle => Theme.of(context).textTheme.overline;
+
+  TextSpan chordLine(String line) {
+    return TextSpan(text: line, style: baseStyle.copyWith(color: Colors.blue));
+  }
+
+  TextSpan textLine(String line) {
+    return TextSpan(text: line, style: baseStyle);
+  }
+
   TextSpan getWrappedLyrichords() {
     var watch = Stopwatch()..start();
-    var style = Theme.of(context).textTheme.overline;
-    //var line1 = 'Em                A                  C               D';
-    //var line2 = 'line which is pretty goddamn long oh boi what is goin';
 
     var bundles = <TextSpan>[];
     var srcLines = widget.data.lyrichords.split('\n');
 
     var width = MediaQuery.of(context).size.width - 16;
 
-    for (var i = 0; i < srcLines.length; i += 2) {
-      var span1 = TextSpan(
-          text: srcLines[i], style: style.copyWith(color: Colors.blue));
+    for (var i = 0; i < srcLines.length; i++) {
+      var line = srcLines[i];
 
-      if (srcLines.length == i + 1) {
-        bundles.add(span1);
+      if (containsChords(line)) {
+        if (i + 1 == srcLines.length ||
+            srcLines[i + 1].isEmpty ||
+            containsChords(srcLines[i + 1])) {
+          bundles.add(chordLine(line + '\n'));
+        } else {
+          bundles.add(TwoLineBundle(chordLine(line), textLine(srcLines[i + 1]))
+              .computeWrap(width));
+          i++;
+        }
       } else {
-        bundles.add(TwoLineBundle(
-          span1,
-          TextSpan(
-            text: srcLines[i + 1],
-            style: style,
-          ),
-        ).computeWrap(width));
+        bundles.add(textLine(line + '\n'));
       }
     }
 

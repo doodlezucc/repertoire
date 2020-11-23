@@ -27,12 +27,18 @@ class TwoLineBundle {
         textPainter.getLineBoundary(TextPosition(offset: range2.end + 1));
 
     if (rangeLine1But2.end + rangeLine2But2.end == -2) {
-      // Nothing wraps
+      // nothing wraps
       return TextSpan(
           children: [cloneWithNewline(line1), cloneWithNewline(line2)]);
     }
 
-    if (range2.end < range.end || rangeLine1But2.end < 0) {
+    // line1 or line2 wraps
+
+    if (rangeLine2But2.end >= 0 &&
+        (rangeLine1But2.end < 0 // line2 wraps, line1 doesn't
+            ||
+            range2.end < range.end)) {
+      // both wrap, line2 does at an earlier point
       range = range2;
     }
 

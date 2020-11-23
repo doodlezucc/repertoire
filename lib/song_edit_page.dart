@@ -228,7 +228,7 @@ class _SongEditPageState extends State<SongEditPage> {
   }
 
   void onDownloaded() {
-    chordCtrl.value = ChordSuggestionValue(chordCtrl.value.stage);
+    setState(() {});
   }
 
   @override
