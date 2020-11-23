@@ -41,6 +41,12 @@ class _LyrichordsFieldState extends State<LyrichordsField> {
     });
   }
 
+  static bool containsChords(String s) {
+    // Based on https://stackoverflow.com/a/29146707/10258754
+    return s.contains(
+        "(^| )([A-G](##?|bb?)?((m|sus|maj|min|aug|dim)\d?)?(\/[A-G](##?|bb?)?)?)( (?!\\w)|\$)");
+  }
+
   void resetChordController() {
     widget.chordCtrl.onPitchSelected = (pitch) {};
     widget.chordCtrl.onChordSelected = (chord) {
@@ -117,6 +123,60 @@ class _LyrichordsFieldState extends State<LyrichordsField> {
         .fold(0, (len, line) => max(len, line.length));
   }
 
+  void onTextChanged(String s) {
+    if (s.length > widget.data.lyrichords.length) {
+      // text is added
+      int pos = ctrl.selection.baseOffset;
+      if (s[pos - 1] == "\n") {
+        // user wants newline
+        bool isTopLine = s.indexOf("\n") == pos - 1;
+        if (!isTopLine) {
+          int posInLine = pos - s.lastIndexOf("\n", pos - 2) - 2;
+
+          int lineAboveStart = s.lastIndexOf("\n", pos - posInLine - 3) + 1;
+
+          String lineAbove = s.substring(lineAboveStart);
+          lineAbove = lineAbove.substring(0, lineAbove.indexOf("\n"));
+
+          print(lineAbove);
+          print(containsChords(lineAbove));
+
+          if (containsChords(lineAbove)) {
+            String unshiftedLyrics = s.substring(pos - posInLine - 1, pos - 1);
+            int off = -(unshiftedLyrics.length -
+                (unshiftedLyrics = unshiftedLyrics.trimRight()).length);
+
+            String shiftedLyrics = s.substring(pos);
+            shiftedLyrics =
+                shiftedLyrics.substring(0, shiftedLyrics.indexOf("\n"));
+
+            String unshiftedChords = lineAbove.substring(0, posInLine);
+            off -= unshiftedChords.length -
+                (unshiftedChords = unshiftedChords.trimRight()).length;
+
+            if (lineAbove.length > posInLine) {
+              // do the wrap thing
+              s = widget.data.lyrichords;
+              s = s.replaceRange(
+                  lineAboveStart,
+                  pos - 1,
+                  "$unshiftedChords\n$unshiftedLyrics\n" +
+                      lineAbove.substring(posInLine) +
+                      "\n");
+              ctrl.value = TextEditingValue(
+                  text: s,
+                  selection: TextSelection.collapsed(offset: pos + off - 1));
+            }
+          }
+        }
+      }
+    }
+
+    setState(() {
+      widget.data.lyrichords = s;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     resetChordController();
@@ -138,11 +198,7 @@ class _LyrichordsFieldState extends State<LyrichordsField> {
             autocorrect: false,
             enableSuggestions: false,
             focusNode: widget.focusNode,
-            onChanged: (s) {
-              setState(() {
-                widget.data.lyrichords = s;
-              });
-            },
+            onChanged: onTextChanged,
             cursorColor: textStyle.color,
             decoration: InputDecoration(
               border: InputBorder.none,
