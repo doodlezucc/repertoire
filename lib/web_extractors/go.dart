@@ -1,5 +1,9 @@
 //5656
+import 'dart:io';
+
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 
 Future<String> download(dynamic uri) async {
   var response = await http.get(uri);
@@ -29,6 +33,10 @@ class GoScraper {
       print(response.statusCode);
       var s = response.body;
       s = s.substring(s.indexOf('<a href="/url') + 16);
+      if (s.startsWith('https://www.go')) {
+        // accidentally got google preferences url
+        s = s.substring(s.indexOf('<a href="/url') + 16);
+      }
       s = s.substring(0, s.indexOf('&amp;'));
       return s;
     } catch (e) {

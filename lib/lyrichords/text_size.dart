@@ -37,10 +37,8 @@ class TwoLineBundle {
     if (rangeLine2But2.end >= 0 &&
         (rangeLine1But2.end < 0 // line2 wraps, line1 doesn't
             ||
-            range2.end < range.end)) {
-      // both wrap, line2 does at an earlier point
+            range2.end < range.end)) // both wrap, line2 at an earlier point
       range = range2;
-    }
 
     var at = range.end;
 
