@@ -23,6 +23,14 @@ class TwoLineBundle {
       ..layout(maxWidth: width);
 
     var range2 = textPainter.getLineBoundary(TextPosition(offset: 0));
+    var rangeLine2But2 =
+        textPainter.getLineBoundary(TextPosition(offset: range2.end + 1));
+
+    if (rangeLine1But2.end + rangeLine2But2.end == -2) {
+      // Nothing wraps
+      return TextSpan(
+          children: [cloneWithNewline(line1), cloneWithNewline(line2)]);
+    }
 
     if (range2.end < range.end || rangeLine1But2.end < 0) {
       range = range2;
@@ -44,18 +52,22 @@ class TwoLineBundle {
     var s = ts.text;
     if (s.length <= wrap) {
       if (start)
-        return cloneWithText(ts, s + '\n');
+        return cloneWithTextAndNewline(ts, s);
       else
         return TextSpan();
     }
 
     if (start)
-      return cloneWithText(ts, s.substring(0, wrap) + '\n');
+      return cloneWithTextAndNewline(ts, s.substring(0, wrap));
     else
-      return cloneWithText(ts, s.substring(wrap) + '\n');
+      return cloneWithTextAndNewline(ts, s.substring(wrap));
   }
 
-  static TextSpan cloneWithText(TextSpan src, String s) {
-    return TextSpan(text: s, style: src.style);
+  static TextSpan cloneWithNewline(TextSpan ts) {
+    return cloneWithTextAndNewline(ts, ts.text);
+  }
+
+  static TextSpan cloneWithTextAndNewline(TextSpan src, String s) {
+    return TextSpan(text: s + '\n', style: src.style);
   }
 }
