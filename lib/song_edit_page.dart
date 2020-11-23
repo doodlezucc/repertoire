@@ -95,9 +95,12 @@ class _SongEditPageState extends State<SongEditPage> {
   var chordCtrl = ChordSuggestionsController();
   var focusNode = FocusNode();
 
+  var editLyrichords = false;
+
   void initState() {
     super.initState();
     data = SongData.from(widget.song.data);
+    editLyrichords = widget.isCreation || data.lyrichords.isEmpty;
     resetArtistField();
     resetTagAddField();
     focusNode.addListener(() {
@@ -331,22 +334,34 @@ class _SongEditPageState extends State<SongEditPage> {
                       ),
                     ),
                     Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text('Notes'),
-                      ),
+                      child: FlatButton(
+                          child: Text('Edit mode'),
+                          shape: StadiumBorder(),
+                          color: editLyrichords
+                              ? Theme.of(context).primaryColor
+                              : Theme.of(context).buttonColor,
+                          textColor: editLyrichords
+                              ? Colors.white
+                              : Theme.of(context).textTheme.button.color,
+                          onPressed: () {
+                            setState(() {
+                              editLyrichords = !editLyrichords;
+                            });
+                          }),
                     ),
-                    LyrichordsDisplayField(
-                      data: data,
-                      style: TextStyle(
-                        fontSize: 17,
+                    if (!editLyrichords)
+                      LyrichordsDisplayField(
+                        data: data,
+                        style: TextStyle(
+                          fontSize: 17,
+                        ),
                       ),
-                    ),
-                    // LyrichordsEditField(
-                    //   data: data,
-                    //   chordCtrl: chordCtrl,
-                    //   focusNode: focusNode,
-                    // ),
+                    if (editLyrichords)
+                      LyrichordsEditField(
+                        data: data,
+                        chordCtrl: chordCtrl,
+                        focusNode: focusNode,
+                      ),
                     Center(
                       child: Row(
                         children: [
