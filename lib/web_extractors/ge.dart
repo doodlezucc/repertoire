@@ -1,3 +1,8 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:repertoire/web_extractors/go.dart';
 
 class GeniusScraper {
@@ -13,6 +18,10 @@ class GeniusScraper {
         try {
           return extractFromString(html);
         } catch (e) {
+          await File(
+                  join((await getExternalStorageDirectory()).path, 'log.txt'))
+              .writeAsString(html);
+          print('Written to file!');
           print(e);
         }
       }
@@ -23,12 +32,53 @@ class GeniusScraper {
   }
 
   static String extractFromString(String s) {
-    s = s.substring(s.indexOf('s="ly'));
-    s = s.substring(s.indexOf('<p>') + 3);
-    s = s.substring(0, s.indexOf('</p>'));
+    var parsedLyricsStart = s.indexOf('s="ly');
+    if (parsedLyricsStart < 0) {
+      // JSON not parsed :shocked:
+      print('Parsing JSON');
+      s = s.substring(s.indexOf('JSON.parse') + 12);
+      s = s.substring(s.indexOf('JSON.parse') + 12);
+      s = s.substring(0, s.indexOf("');"));
 
-    s = s.replaceAll(RegExp(r'<[\S\s]*?>'), '');
+      s = s
+          .replaceAll('\\"', '"')
+          .replaceAll("\\'", "'")
+          .replaceAll('\\\\', '\\');
 
-    return s.trim();
+      var j = json.decode(s);
+      var lyricsJson =
+          j['songPage']['lyricsData']['body']['children'][0]['children'];
+
+      var lyrics = gJson(lyricsJson);
+      return lyrics.join();
+    } else {
+      // JSON is already parsed
+      s = s.substring(parsedLyricsStart);
+      s = s.substring(s.indexOf('<p>') + 3);
+      s = s.substring(0, s.indexOf('</p>'));
+
+      s = s.replaceAll(RegExp(r'<[\S\s]*?>'), '');
+      return s.trim();
+    }
+  }
+
+  static List<String> gJson(json) {
+    if (json is String) {
+      return json.isEmpty ? [] : [json];
+    }
+
+    if (json is List) {
+      return json.map((e) => gJson(e)).reduce((list1, list2) => list1 + list2);
+    }
+
+    if (json['children'] != null) {
+      return gJson(json['children']);
+    }
+
+    if (json['tag'] == 'br' || json['tag'] == 'inread-ad') {
+      return ['\n'];
+    }
+
+    return [];
   }
 }
