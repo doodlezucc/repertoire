@@ -37,6 +37,7 @@ class UGScraper {
 
     s = HtmlUnescape().convert(s);
     s = s.replaceAll('&rsquo;', '\'');
+    s = s.replaceAll('\\"', '"');
 
     return s.trim();
   }
