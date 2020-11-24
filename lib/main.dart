@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
           textTheme: TextTheme(
             overline: TextStyle(
               fontFamily: "FiraCode",
-              fontSize: 10,
+              fontSize: 13,
               color: Colors.black,
               fontWeight: FontWeight.bold,
             ),

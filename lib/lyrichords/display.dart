@@ -25,7 +25,7 @@ class _LyrichordsDisplayFieldState extends State<LyrichordsDisplayField> {
   TextStyle get baseStyle => Theme.of(context).textTheme.overline;
 
   TextSpan chordLine(String line) {
-    return TextSpan(text: line, style: baseStyle.copyWith(color: Colors.blue));
+    return TextSpan(text: line, style: baseStyle.copyWith(color: Colors.red));
   }
 
   TextSpan textLine(String line) {
