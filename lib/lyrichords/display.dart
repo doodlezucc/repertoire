@@ -70,7 +70,7 @@ class _LyrichordsDisplayFieldState extends State<LyrichordsDisplayField> {
       padding: const EdgeInsets.all(8.0),
       child: Text.rich(
         getWrappedLyrichords(),
-        softWrap: false,
+        softWrap: true,
       ),
     );
   }
