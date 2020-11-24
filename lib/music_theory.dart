@@ -107,7 +107,7 @@ class ChordType {
 bool containsChords(String s) {
   // Based on https://stackoverflow.com/a/29146707/10258754
   return (s + ' ').contains(RegExp(
-      r"(^| )([A-G](##?|bb?)?((m|sus|maj|min|aug|dim)\d?)?(\/[A-G](##?|bb?)?)?)( (?!\\w)|\$)"));
+      r"(^| )([A-G](##?|bb?)?((m|sus|maj|min|aug|dim)?)\d?(\/[A-G](##?|bb?)?)?)( (?!\\w)|\$)"));
 }
 
 class Chord {
