@@ -1,7 +1,7 @@
 import 'package:http/http.dart' as http;
 
 Future<String> download(dynamic uri) async {
-  var response = await http.get(uri);
+  var response = await http.get(Uri.parse(uri));
   return response.body;
 }
 

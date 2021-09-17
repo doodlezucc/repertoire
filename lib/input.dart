@@ -33,7 +33,7 @@ class KeyScaleField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RaisedButton(
+    return ElevatedButton(
       onPressed: () async {
         var keyscale = await showInputKeyScale(context: context, init: value);
         if (keyscale != null) {
@@ -53,7 +53,7 @@ class ClampedPitchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RaisedButton(
+    return ElevatedButton(
       onPressed: () async {
         var key = await showInputClampedPitch(context: context, init: value);
         if (key != null) {
@@ -101,7 +101,7 @@ Future<Chord> showInputChord(
             );
           }),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: Text("OK"),
               onPressed: () {
                 Navigator.pop(ctx, Chord(pitch.value, type));
@@ -148,7 +148,7 @@ Future<KeyScale> showInputKeyScale(
             );
           }),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: Text("OK"),
               onPressed: () {
                 Navigator.pop(ctx, KeyScale(pitch.value, scale));
@@ -172,7 +172,7 @@ Future<ClampedPitch> showInputClampedPitch(
           title: Text("Enter key"),
           content: dcp,
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: Text("OK"),
               onPressed: () {
                 Navigator.pop(ctx, dcp.value);

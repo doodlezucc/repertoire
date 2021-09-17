@@ -36,7 +36,7 @@ class _DownloadButtonState extends State<DownloadButton> {
 
   @override
   Widget build(BuildContext context) {
-    return FlatButton.icon(
+    return TextButton.icon(
       icon: isDownloading
           ? SizedBox(
               width: 16,
@@ -48,11 +48,12 @@ class _DownloadButtonState extends State<DownloadButton> {
           : Icon(Icons.get_app),
       label: Text("Lyrics" + (widget.withChords ? " with chords" : "")),
       onPressed: isDownloading ? null : findLyrichords,
-      shape: StadiumBorder(),
-      color: Theme.of(context).accentColor,
-      textColor: Colors.white,
-      disabledTextColor: Colors.white,
-      disabledColor: Theme.of(context).backgroundColor,
+      style: ButtonStyle(
+        shape: MaterialStateProperty.all(StadiumBorder()),
+        backgroundColor:
+            MaterialStateProperty.all(Theme.of(context).accentColor),
+        foregroundColor: MaterialStateProperty.all(Colors.white),
+      ),
     );
   }
 
@@ -80,7 +81,7 @@ class _DownloadButtonState extends State<DownloadButton> {
     } else {
       setState(() {
         isDownloading = false;
-        Scaffold.of(context).showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Error: " + result.toString())));
       });
     }
@@ -248,7 +249,7 @@ class _SongEditPageState extends State<SongEditPage> {
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    FlatButton.icon(
+                    TextButton.icon(
                       icon: Icon(Icons.done),
                       label: Text("Save changes"),
                       onPressed: () {
@@ -256,7 +257,7 @@ class _SongEditPageState extends State<SongEditPage> {
                         Navigator.pop(ctx, true);
                       },
                     ),
-                    FlatButton.icon(
+                    TextButton.icon(
                       icon: Icon(Icons.cancel),
                       label: Text("Discard changes"),
                       onPressed: () {
@@ -318,7 +319,7 @@ class _SongEditPageState extends State<SongEditPage> {
                             child: Row(
                               children: <Widget>[
                                 Expanded(child: _tagAddField),
-                                FlatButton.icon(
+                                TextButton.icon(
                                   icon: Icon(Icons.add_circle),
                                   label: Text("Add"),
                                   onPressed:
@@ -335,15 +336,21 @@ class _SongEditPageState extends State<SongEditPage> {
                       ),
                     ),
                     Center(
-                      child: FlatButton(
+                      child: TextButton(
                           child: Text('Edit mode'),
-                          shape: StadiumBorder(),
-                          color: editLyrichords
-                              ? Theme.of(context).primaryColor
-                              : Theme.of(context).buttonColor,
-                          textColor: editLyrichords
-                              ? Colors.white
-                              : Theme.of(context).textTheme.button.color,
+                          style: ButtonStyle(
+                            shape: MaterialStateProperty.all(StadiumBorder()),
+                            backgroundColor: MaterialStateProperty.all(
+                              editLyrichords
+                                  ? Theme.of(context).primaryColor
+                                  : Theme.of(context).buttonColor,
+                            ),
+                            foregroundColor: MaterialStateProperty.all(
+                              editLyrichords
+                                  ? Colors.white
+                                  : Theme.of(context).textTheme.button.color,
+                            ),
+                          ),
                           onPressed: () {
                             setState(() {
                               editLyrichords = !editLyrichords;
@@ -396,7 +403,7 @@ class _SongEditPageState extends State<SongEditPage> {
           height: 50,
           child: Row(
             children: <Widget>[
-              FlatButton.icon(
+              TextButton.icon(
                 icon: Icon(Icons.done),
                 label: Text("Done"),
                 onPressed: () {

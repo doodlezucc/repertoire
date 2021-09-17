@@ -183,11 +183,14 @@ class _MyHomePageState extends State<MyHomePage> {
                   Expanded(
                     child: Container(),
                   ),
-                  FlatButton.icon(
+                  TextButton.icon(
                     onPressed: letUserAddSong,
                     icon: Icon(Icons.add),
-                    label: Text("Add song"),
-                  )
+                    label: Text("Add Song"),
+                  ),
+                  Expanded(
+                    child: Container(),
+                  ),
                 ],
               ),
             ),
