@@ -44,6 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
   static const int SORT_TITLE = 0;
   static const int SORT_ARTIST = 1;
   static const int SORT_DATE = 2;
+  static const int SORT_RANDOM = 3;
 
   int sortMethod = SORT_DATE;
   List<Song> songs = [];
@@ -83,6 +84,9 @@ class _MyHomePageState extends State<MyHomePage> {
           ..sort((a, b) {
             return -a.creationTimestamp.compareTo(b.creationTimestamp);
           });
+      case SORT_RANDOM:
+        var l = List<Song>.from(repertory.songs);
+        return l..shuffle();
     }
     return repertory.songs.toList();
   }
@@ -112,18 +116,18 @@ class _MyHomePageState extends State<MyHomePage> {
               height: 50,
               child: Row(
                 children: <Widget>[
-                  IconButton(
-                    icon: Icon(Icons.save),
-                    onPressed: () {
-                      songs.forEach((element) {
-                        element.save();
-                      });
-                    },
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.insert_drive_file),
-                    onPressed: load,
-                  ),
+                  // IconButton(
+                  //   icon: Icon(Icons.save),
+                  //   onPressed: () {
+                  //     songs.forEach((element) {
+                  //       element.save();
+                  //     });
+                  //   },
+                  // ),
+                  // IconButton(
+                  //   icon: Icon(Icons.insert_drive_file),
+                  //   onPressed: load,
+                  // ),
                   Expanded(
                     child: Container(),
                   ),
@@ -133,7 +137,10 @@ class _MyHomePageState extends State<MyHomePage> {
                           value: SORT_TITLE, child: Text("by Title")),
                       DropdownMenuItem(
                           value: SORT_ARTIST, child: Text("by Artist")),
-                      DropdownMenuItem(value: SORT_DATE, child: Text("by Date"))
+                      DropdownMenuItem(
+                          value: SORT_DATE, child: Text("by Date")),
+                      DropdownMenuItem(
+                          value: SORT_RANDOM, child: Text("Random"))
                     ],
                     onChanged: (i) {
                       sortMethod = i;
