@@ -24,8 +24,37 @@ class _LyrichordsDisplayFieldState extends State<LyrichordsDisplayField> {
 
   TextStyle get baseStyle => Theme.of(context).textTheme.overline;
 
-  TextSpan chordLine(String line) {
-    return TextSpan(text: line, style: baseStyle.copyWith(color: Colors.red));
+  TextSpan chordLine(String line, [String suffix = '']) {
+    var symbols = RegExp(r'\S+').allMatches(line);
+    var l = line;
+    var off = 0;
+    for (var s in symbols) {
+      var chord = s.group(0);
+      var replacement = transposeSymbol(chord, widget.data.transpose);
+      var rest = '';
+      if (s.start + replacement.length <= l.length) {
+        rest = l.substring(s.start + replacement.length);
+        var iSpace = rest.indexOf(' ');
+        if (iSpace >= 0) {
+          rest = ' ' * iSpace + rest.substring(iSpace);
+        } else {
+          rest = '';
+        }
+      }
+      l = l.substring(0, s.start + off) + replacement + rest;
+
+      // Keep single space between chords
+      if (replacement.length > chord.length &&
+          line.length > s.start + chord.length + 1 &&
+          line[s.start + chord.length + 1] != ' ') {
+        off++;
+      }
+    }
+
+    return TextSpan(
+      text: l + suffix,
+      style: baseStyle.copyWith(color: Colors.red),
+    );
   }
 
   TextSpan textLine(String line) {
@@ -43,11 +72,11 @@ class _LyrichordsDisplayFieldState extends State<LyrichordsDisplayField> {
     for (var i = 0; i < srcLines.length; i++) {
       var line = srcLines[i];
 
-      if (containsChords(line)) {
+      if (isChordLine(line)) {
         if (i + 1 == srcLines.length ||
             srcLines[i + 1].isEmpty ||
-            containsChords(srcLines[i + 1])) {
-          bundles.add(chordLine(line + '\n'));
+            isChordLine(srcLines[i + 1])) {
+          bundles.add(chordLine(line, '\n'));
         } else {
           bundles.add(TwoLineBundle(chordLine(line), textLine(srcLines[i + 1]))
               .computeWrap(width));
@@ -58,7 +87,7 @@ class _LyrichordsDisplayFieldState extends State<LyrichordsDisplayField> {
       }
     }
 
-    print(watch.elapsed.inMilliseconds);
+    print('Displayed lyrichords in ${watch.elapsed.inMilliseconds}ms');
 
     return TextSpan(children: bundles);
   }

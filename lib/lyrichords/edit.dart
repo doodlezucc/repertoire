@@ -26,9 +26,13 @@ class _LyrichordsEditFieldState extends State<LyrichordsEditField> {
     super.initState();
     ctrl = TextEditingController(text: widget.data.lyrichords);
     resetChordController();
-    widget.chordCtrl.addListener(() {
-      onChordUpdate();
-    });
+    widget.chordCtrl.addListener(onChordUpdate);
+  }
+
+  @override
+  void dispose() {
+    widget.chordCtrl.removeListener(onChordUpdate);
+    super.dispose();
   }
 
   void onChordUpdate() {
@@ -133,9 +137,9 @@ class _LyrichordsEditFieldState extends State<LyrichordsEditField> {
           lineAbove = lineAbove.substring(0, lineAbove.indexOf("\n"));
 
           print(lineAbove);
-          print(containsChords(lineAbove));
+          print(isChordLine(lineAbove));
 
-          if (containsChords(lineAbove)) {
+          if (isChordLine(lineAbove)) {
             String unshiftedLyrics = s.substring(pos - posInLine - 1, pos - 1);
             int off = -(unshiftedLyrics.length -
                 (unshiftedLyrics = unshiftedLyrics.trimRight()).length);

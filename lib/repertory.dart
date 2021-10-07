@@ -51,6 +51,7 @@ class SongData {
   String get artistSort => artistSortCut(artist).toLowerCase();
   Set<String> tags = {};
   String lyrichords;
+  int transpose = 0;
 
   String get description {
     String t = title.isEmpty ? "Untitled" : title;
@@ -64,7 +65,8 @@ class SongData {
     return title == other.title &&
         artist == other.artist &&
         setEquals(tags, other.tags) &&
-        lyrichords == other.lyrichords;
+        lyrichords == other.lyrichords &&
+        transpose == other.transpose;
   }
 
   static String artistSortCut(String artist) =>
@@ -81,6 +83,7 @@ class SongData {
       title,
       artist,
       tags.map((e) => e.replaceAll(",", "\\,")).join(","),
+      transpose,
       "",
       lyrichords,
     ].join("\n");
@@ -95,7 +98,14 @@ class SongData {
         ? line.split(",").map((e) => e.replaceAll("\\,", ",")).toSet()
         : {};
 
-    lyrichords = lines.sublist(4).join("\n");
+    var divider = lines.indexWhere((line) => line.isEmpty, 3);
+    // print(divider);
+    if (divider >= 4) {
+      transpose = int.parse(lines[3]);
+      print(transpose);
+    }
+
+    lyrichords = lines.sublist(divider + 1).join("\n");
   }
 
   SongData({
@@ -103,6 +113,7 @@ class SongData {
     @required String artist,
     @required this.tags,
     this.lyrichords = "",
+    this.transpose = 0,
   })  : title = title,
         artist = artist;
 
@@ -124,6 +135,7 @@ class SongData {
           artist: source.artist,
           tags: Set.from(source.tags),
           lyrichords: source.lyrichords,
+          transpose: source.transpose,
         );
 }
 

@@ -1,5 +1,6 @@
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 import 'package:flutter/material.dart';
+import 'package:numberpicker/numberpicker.dart';
 
 import 'keyboard_visibility.dart';
 import 'lyrichords/display.dart';
@@ -51,7 +52,7 @@ class _DownloadButtonState extends State<DownloadButton> {
       style: ButtonStyle(
         shape: MaterialStateProperty.all(StadiumBorder()),
         backgroundColor:
-            MaterialStateProperty.all(Theme.of(context).accentColor),
+            MaterialStateProperty.all(Theme.of(context).primaryColor),
         foregroundColor: MaterialStateProperty.all(Colors.white),
       ),
     );
@@ -325,9 +326,7 @@ class _SongEditPageState extends State<SongEditPage> {
                                   onPressed:
                                       _tagAddField.controller.text.isEmpty
                                           ? null
-                                          : () {
-                                              _tagAddField.triggerSubmitted();
-                                            },
+                                          : _tagAddField.triggerSubmitted,
                                 )
                               ],
                             ),
@@ -343,7 +342,7 @@ class _SongEditPageState extends State<SongEditPage> {
                             backgroundColor: MaterialStateProperty.all(
                               editLyrichords
                                   ? Theme.of(context).primaryColor
-                                  : Theme.of(context).buttonColor,
+                                  : Theme.of(context).highlightColor,
                             ),
                             foregroundColor: MaterialStateProperty.all(
                               editLyrichords
@@ -356,6 +355,29 @@ class _SongEditPageState extends State<SongEditPage> {
                               editLyrichords = !editLyrichords;
                             });
                           }),
+                    ),
+                    Visibility(
+                      visible: !editLyrichords,
+                      child: Center(
+                        child: NumberPicker(
+                          minValue: -11,
+                          maxValue: 11,
+                          haptics: true,
+                          itemCount: 5,
+                          textMapper: (s) =>
+                              (s[0] == '-' || s == '0') ? s : '+$s',
+                          textStyle: TextStyle(fontSize: 12),
+                          selectedTextStyle: TextStyle(
+                            fontSize: 16,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                          value: data.transpose,
+                          onChanged: (v) => setState(() => data.transpose = v),
+                          axis: Axis.horizontal,
+                          itemWidth: 50,
+                          itemHeight: 40,
+                        ),
+                      ),
                     ),
                     if (!editLyrichords)
                       LyrichordsDisplayField(

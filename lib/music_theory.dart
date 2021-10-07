@@ -104,10 +104,38 @@ class ChordType {
   }
 }
 
-bool containsChords(String s) {
+const allKeys = [
+  ['C'],
+  ['C#', 'Db'],
+  ['D'],
+  ['D#', 'Eb'],
+  ['E'],
+  ['F'],
+  ['F#', 'Gb'],
+  ['G'],
+  ['G#', 'Ab'],
+  ['A'],
+  ['A#', 'Bb'],
+  ['B'],
+];
+
+String transposeSymbol(String s, int transpose) {
+  if (transpose == 0) return s;
+
+  var pitch = RegExp(r'\S[#,b]?').firstMatch(s).group(0);
+  var index = allKeys.indexWhere((p) => p.contains(pitch));
+
+  if (index < 0) return s;
+
+  var tPitch = allKeys[(index + transpose) % allKeys.length][0];
+
+  return tPitch + s.substring(pitch.length);
+}
+
+bool isChordLine(String s) {
   // Based on https://stackoverflow.com/a/29146707/10258754
   return (s + ' ').contains(RegExp(
-      r"(^| )([A-G](##?|bb?)?((m|sus|maj|min|aug|dim)?)\d?(\/[A-G](##?|bb?)?)?)( (?!\\w)|\$)"));
+      r"(^| )([A-G](##?|bb?)?((m|sus|maj|min|aug|dim|add)?)\d?(\/[A-G](##?|bb?)?)?)( (?!\\w)|\$)"));
 }
 
 class Chord {
@@ -157,13 +185,13 @@ class ClampedPitch {
     whiteIndex = whiteKeys.indexOf(s[0]);
     modification = s.length < 2
         ? Modification.NONE
-        : (s[1] == "♯" ? Modification.SHARP : Modification.FLAT);
+        : (s[1] == "#" ? Modification.SHARP : Modification.FLAT);
   }
 
   String _modString() {
     return modification == Modification.SHARP
-        ? "♯"
-        : (modification == Modification.FLAT ? "♭" : "");
+        ? "#"
+        : (modification == Modification.FLAT ? "b" : "");
   }
 
   int _modAdd() {
