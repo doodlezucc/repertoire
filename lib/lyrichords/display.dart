@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../music_theory.dart';
@@ -26,28 +28,30 @@ class _LyrichordsDisplayFieldState extends State<LyrichordsDisplayField> {
 
   TextSpan chordLine(String line, [String suffix = '']) {
     var symbols = RegExp(r'\S+').allMatches(line);
-    var l = line;
-    var off = 0;
-    for (var s in symbols) {
-      var chord = s.group(0);
-      var replacement = transposeSymbol(chord, widget.data.transpose);
-      var rest = '';
-      if (s.start + replacement.length <= l.length) {
-        rest = l.substring(s.start + chord.length);
-        var iSpace = rest.indexOf(' ');
-        if (iSpace >= 0) {
-          rest = ' ' * iSpace + rest.substring(iSpace);
-        } else {
-          rest = '';
-        }
-      }
-      l = l.substring(0, s.start + off) + replacement + rest;
 
-      // Keep single space between chords
-      if (replacement.length > chord.length &&
-          line.length > s.start + chord.length + 1 &&
-          line[s.start + chord.length + 1] != ' ') {
-        off++;
+    var l = line;
+    if (symbols.isNotEmpty) {
+      var off = 0;
+
+      void replaceChord(int spaces, RegExpMatch match) {
+        l += ' ' * max(1, spaces + off);
+
+        var chord = match.group(0);
+        var replacement = transposeSymbol(chord, widget.data.transpose);
+
+        l += replacement;
+
+        off = chord.length - replacement.length;
+      }
+
+      l = '';
+
+      replaceChord(symbols.first.start, symbols.first);
+
+      for (var i = 1; i < symbols.length; i++) {
+        var match = symbols.elementAt(i);
+        var spaces = match.start - symbols.elementAt(i - 1).end;
+        replaceChord(spaces, match);
       }
     }
 
