@@ -122,6 +122,12 @@ const allKeys = [
 String transposeSymbol(String s, int transpose) {
   if (transpose == 0) return s;
 
+  var slashIndex = s.indexOf('/') + 1;
+  if (slashIndex > 0) {
+    s = s.substring(0, slashIndex) +
+        transposeSymbol(s.substring(slashIndex), transpose);
+  }
+
   var pitch = RegExp(r'\S[#,b]?').firstMatch(s).group(0);
   var index = allKeys.indexWhere((p) => p.contains(pitch));
 
@@ -132,10 +138,17 @@ String transposeSymbol(String s, int transpose) {
   return tPitch + s.substring(pitch.length);
 }
 
+final chordsRegExp = RegExp(
+    r"([A-G](##?|bb?)?((maj|sus|m|min|aug|dim|add)?)\d?(add|\/[A-G])?)|\s+");
+
 bool isChordLine(String s) {
-  // Based on https://stackoverflow.com/a/29146707/10258754
-  return (s + ' ').contains(RegExp(
-      r"(^| )([A-G](##?|bb?)?((m|sus|maj|min|aug|dim|add)?)\d?(\/[A-G](##?|bb?)?)?)( (?!\\w)|\$)"));
+  if (s.isEmpty) return false;
+
+  var matches = chordsRegExp.allMatches(s + ' ');
+  var matchedChars = matches.fold<int>(0, (v, e) => v + e.end - e.start);
+
+  var proportion = matchedChars / s.length;
+  return proportion > 0.9;
 }
 
 class Chord {

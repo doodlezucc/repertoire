@@ -33,7 +33,7 @@ class _LyrichordsDisplayFieldState extends State<LyrichordsDisplayField> {
       var replacement = transposeSymbol(chord, widget.data.transpose);
       var rest = '';
       if (s.start + replacement.length <= l.length) {
-        rest = l.substring(s.start + replacement.length);
+        rest = l.substring(s.start + chord.length);
         var iSpace = rest.indexOf(' ');
         if (iSpace >= 0) {
           rest = ' ' * iSpace + rest.substring(iSpace);
