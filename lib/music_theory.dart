@@ -139,7 +139,7 @@ String transposeSymbol(String s, int transpose) {
 }
 
 final chordsRegExp = RegExp(
-    r"([A-G](##?|bb?)?((maj|sus|m|min|aug|dim|add)?)\d?(add|\/[A-G])?)|\s+");
+    r"([A-G](##?|bb?)?((maj|sus|m|min|aug|dim|add)?)\d?(add|\/[A-G])?)|N\.C\.|\s+");
 
 bool isChordLine(String s) {
   if (s.isEmpty) return false;

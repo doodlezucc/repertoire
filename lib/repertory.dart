@@ -99,10 +99,8 @@ class SongData {
         : {};
 
     var divider = lines.indexWhere((line) => line.isEmpty, 3);
-    // print(divider);
     if (divider >= 4) {
       transpose = int.parse(lines[3]);
-      print(transpose);
     }
 
     lyrichords = lines.sublist(divider + 1).join("\n");
