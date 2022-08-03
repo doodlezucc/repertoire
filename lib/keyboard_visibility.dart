@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
 /// Calls `builder` on keyboard close/open.
 /// https://stackoverflow.com/a/63241409/1321917
 class KeyboardVisibilityBuilder extends StatefulWidget {
-  final Widget child;
+  final Widget? child;
   final Widget Function(
     BuildContext context,
-    Widget child,
+    Widget? child,
     bool isKeyboardVisible,
   ) builder;
 
   const KeyboardVisibilityBuilder({
-    Key key,
+    Key? key,
     this.child,
-    @required this.builder,
+    required this.builder,
   }) : super(key: key);
 
   @override

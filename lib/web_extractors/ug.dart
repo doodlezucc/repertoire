@@ -8,12 +8,10 @@ class UGScraper {
         '$title $artist' + (chords ? ' chords' : ''),
         'tabs.ultimate-guitar.com');
 
-    if (resultUrl is WebError) return resultUrl;
-
     try {
       return extractFromString(await download(resultUrl));
     } catch (e) {
-      return WebError('Can\'t extract correctly!');
+      throw "Can't extract correctly!";
     }
   }
 

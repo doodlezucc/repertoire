@@ -32,14 +32,14 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key}) : super(key: key);
+  MyHomePage({Key? key}) : super(key: key);
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Repertory repertory = Repertory(null);
+  late Repertory repertory;
 
   static const int SORT_TITLE = 0;
   static const int SORT_ARTIST = 1;
@@ -131,7 +131,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   Expanded(
                     child: Container(),
                   ),
-                  DropdownButton(
+                  DropdownButton<int>(
                     items: [
                       DropdownMenuItem(
                           value: SORT_TITLE, child: Text("by Title")),
@@ -143,7 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           value: SORT_RANDOM, child: Text("Random"))
                     ],
                     onChanged: (i) {
-                      sortMethod = i;
+                      sortMethod = i!;
                       refreshSongs();
                     },
                     value: sortMethod,
@@ -221,13 +221,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<File> file() async {
     var dir = await getExternalStorageDirectory();
-    return File("${dir.path}/repertory.fwd");
+    return File("${dir!.path}/repertory.fwd");
   }
 
   void load() async {
     isLoading = true;
     var extdir = await getExternalStorageDirectory();
-    var directory = Directory(path.join(extdir.path, "Repertoire"));
+    var directory = Directory(path.join(extdir!.path, "Repertoire"));
     if (!await directory.exists()) {
       await directory.create();
       setState(() {
@@ -239,18 +239,6 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     repertory.loadAllSongs((song) {
       isLoading = false;
-      refreshSongs();
-    });
-  }
-
-  @deprecated
-  void loadJson() async {
-    if (!(await file()).existsSync()) {
-      return;
-    }
-    String s = await (await file()).readAsString();
-    var j = jsonDecode(s);
-    repertory = Repertory.fromJson(j, () {
       refreshSongs();
     });
   }

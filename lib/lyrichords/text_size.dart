@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 class TwoLineBundle {
@@ -53,7 +51,7 @@ class TwoLineBundle {
   }
 
   static TextSpan cut(TextSpan ts, int wrap, bool start) {
-    var s = ts.text;
+    var s = ts.text!;
     if (s.length <= wrap) {
       if (start)
         return cloneWithTextAndNewline(ts, s);
@@ -68,7 +66,7 @@ class TwoLineBundle {
   }
 
   static TextSpan cloneWithNewline(TextSpan ts) {
-    return cloneWithTextAndNewline(ts, ts.text);
+    return cloneWithTextAndNewline(ts, ts.text!);
   }
 
   static TextSpan cloneWithTextAndNewline(TextSpan src, String s) {

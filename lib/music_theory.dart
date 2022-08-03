@@ -1,34 +1,3 @@
-class MetricTime {
-  final double _beats;
-
-  const MetricTime(
-      {int whole = 0, int half = 0, int quarter = 0, int eight = 0})
-      : _beats = whole / 4.0 + half / 2.0 + quarter + eight * 2.0;
-
-  const MetricTime.beats(this._beats);
-}
-
-@Deprecated("this ain't useful")
-class Timeable {
-  MetricTime start;
-  MetricTime length;
-
-  Timeable({this.start, this.length}) {
-    if (start == null) {
-      start = const MetricTime();
-    }
-    if (length == null) {
-      length = const MetricTime(quarter: 1);
-    }
-  }
-  Timeable.fromJson(Map<String, dynamic> json)
-      : start = MetricTime.beats(json["start"].toDouble()),
-        length = MetricTime.beats(json["length"].toDouble());
-
-  Map<String, dynamic> toJson() =>
-      {"start": start._beats, "length": length._beats};
-}
-
 class KeyScale {
   ClampedPitch tonic;
   Scale scale;
@@ -128,7 +97,7 @@ String transposeSymbol(String s, int transpose) {
         transposeSymbol(s.substring(slashIndex), transpose);
   }
 
-  var pitch = RegExp(r'\S[#,b]?').firstMatch(s).group(0);
+  var pitch = RegExp(r'\S[#,b]?').firstMatch(s)!.group(0)!;
   var index = allKeys.indexWhere((p) => p.contains(pitch));
 
   if (index < 0) return s;
@@ -194,12 +163,11 @@ class ClampedPitch {
 
   ClampedPitch.c() : this(0, Modification.NONE);
 
-  ClampedPitch.parse(String s) {
-    whiteIndex = whiteKeys.indexOf(s[0]);
-    modification = s.length < 2
-        ? Modification.NONE
-        : (s[1] == "#" ? Modification.SHARP : Modification.FLAT);
-  }
+  ClampedPitch.parse(String s)
+      : whiteIndex = whiteKeys.indexOf(s[0]),
+        modification = s.length < 2
+            ? Modification.NONE
+            : (s[1] == "#" ? Modification.SHARP : Modification.FLAT);
 
   String _modString() {
     return modification == Modification.SHARP

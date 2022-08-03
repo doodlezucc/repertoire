@@ -10,25 +10,22 @@ class GeniusScraper {
     var resultUrl =
         await GoScraper.getFirstResult('$title $artist', 'genius.com');
 
-    if (resultUrl is WebError) return resultUrl;
-
     try {
       for (int i = 0; i < 3; i++) {
         var html = await download(resultUrl);
         try {
           return extractFromString(html);
         } catch (e) {
-          await File(
-                  join((await getExternalStorageDirectory()).path, 'log.txt'))
-              .writeAsString(html);
+          var dir = await getExternalStorageDirectory();
+          await File(join(dir!.path, 'log.txt')).writeAsString(html);
           print('Written to file!');
           print(e);
         }
       }
     } catch (e) {
-      return WebError('Can\'t download site!');
+      throw "Can't download site!";
     }
-    return WebError('Lyrics extraction failed!');
+    throw 'Lyrics extraction failed!';
   }
 
   static String extractFromString(String s) {

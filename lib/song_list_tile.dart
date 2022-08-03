@@ -9,10 +9,10 @@ class SongListTile extends StatelessWidget {
   final void Function() onEdited;
 
   const SongListTile({
-    Key key,
-    @required this.song,
-    @required this.onDelete,
-    @required this.onEdited,
+    Key? key,
+    required this.song,
+    required this.onDelete,
+    required this.onEdited,
   }) : super(key: key);
 
   @override

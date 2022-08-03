@@ -13,8 +13,11 @@ class SongEditPage extends StatefulWidget {
   final Song song;
   final bool isCreation;
 
-  const SongEditPage({Key key, @required this.song, this.isCreation = false})
-      : super(key: key);
+  const SongEditPage({
+    Key? key,
+    required this.song,
+    this.isCreation = false,
+  }) : super(key: key);
 
   @override
   _SongEditPageState createState() => _SongEditPageState();
@@ -25,8 +28,12 @@ class DownloadButton extends StatefulWidget {
   final void Function() onDownloaded;
   final bool withChords;
 
-  const DownloadButton({Key key, this.data, this.onDownloaded, this.withChords})
-      : super(key: key);
+  const DownloadButton({
+    Key? key,
+    required this.data,
+    required this.onDownloaded,
+    required this.withChords,
+  }) : super(key: key);
 
   @override
   _DownloadButtonState createState() => _DownloadButtonState();
@@ -90,9 +97,9 @@ class _DownloadButtonState extends State<DownloadButton> {
 }
 
 class _SongEditPageState extends State<SongEditPage> {
-  SongData data;
-  AutoCompleteTextField<String> _artistField;
-  AutoCompleteTextField<String> _tagAddField;
+  late SongData data;
+  late AutoCompleteTextField<String> _artistField;
+  late AutoCompleteTextField<String> _tagAddField;
   String tagFieldText = "";
   var chordCtrl = ChordSuggestionsController();
   var focusNode = FocusNode();
@@ -112,8 +119,8 @@ class _SongEditPageState extends State<SongEditPage> {
 
   void resetArtistField() {
     void Function(String) next = (s) {
-      _artistField.textField.onChanged(_artistField.controller.text);
-      _tagAddField.focusNode.requestFocus();
+      _artistField.textField!.onChanged!(_artistField.controller!.text);
+      _tagAddField.focusNode!.requestFocus();
     };
     GlobalKey<AutoCompleteTextFieldState<String>> key = new GlobalKey();
     _artistField = AutoCompleteTextField<String>(
@@ -131,7 +138,7 @@ class _SongEditPageState extends State<SongEditPage> {
         data.artist = s;
       },
       itemBuilder: (context, item) {
-        String q = _artistField.controller.text;
+        String q = _artistField.controller!.text;
         int index = item.toLowerCase().indexOf(q.toLowerCase());
         return Padding(
             padding: EdgeInsets.all(8.0),
@@ -153,12 +160,12 @@ class _SongEditPageState extends State<SongEditPage> {
       itemSorter: (a, b) {
         if (SongData.artistSortCut(a)
             .toLowerCase()
-            .startsWith(_artistField.controller.text.toLowerCase())) {
+            .startsWith(_artistField.controller!.text.toLowerCase())) {
           return -1;
         }
         if (SongData.artistSortCut(b)
             .toLowerCase()
-            .startsWith(_artistField.controller.text.toLowerCase())) {
+            .startsWith(_artistField.controller!.text.toLowerCase())) {
           return 1;
         }
         return a.toLowerCase().compareTo(b.toLowerCase());
@@ -295,7 +302,7 @@ class _SongEditPageState extends State<SongEditPage> {
                                 textInputAction: TextInputAction.next,
                                 onChanged: (s) => data.title = s,
                                 onSubmitted: (s) {
-                                  _artistField.focusNode.requestFocus();
+                                  _artistField.focusNode!.requestFocus();
                                 },
                                 autofocus: widget.isCreation,
                               ),
@@ -324,7 +331,7 @@ class _SongEditPageState extends State<SongEditPage> {
                                   icon: Icon(Icons.add_circle),
                                   label: Text("Add"),
                                   onPressed:
-                                      _tagAddField.controller.text.isEmpty
+                                      _tagAddField.controller!.text.isEmpty
                                           ? null
                                           : _tagAddField.triggerSubmitted,
                                 )
@@ -347,7 +354,7 @@ class _SongEditPageState extends State<SongEditPage> {
                             foregroundColor: MaterialStateProperty.all(
                               editLyrichords
                                   ? Colors.white
-                                  : Theme.of(context).textTheme.button.color,
+                                  : Theme.of(context).textTheme.button!.color,
                             ),
                           ),
                           onPressed: () {

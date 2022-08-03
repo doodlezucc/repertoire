@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'music_theory.dart';
@@ -7,7 +6,7 @@ class ChordField extends StatelessWidget {
   final Chord value;
   final void Function(Chord val) onChanged;
 
-  ChordField({@required this.value, this.onChanged});
+  ChordField({required this.value, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +28,7 @@ class KeyScaleField extends StatelessWidget {
   final KeyScale value;
   final void Function(KeyScale val) onChanged;
 
-  KeyScaleField({@required this.value, this.onChanged});
+  KeyScaleField({required this.value, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +48,7 @@ class ClampedPitchField extends StatelessWidget {
   final ClampedPitch value;
   final void Function(ClampedPitch val) onChanged;
 
-  ClampedPitchField({@required this.value, this.onChanged});
+  ClampedPitchField({required this.value, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -65,15 +64,13 @@ class ClampedPitchField extends StatelessWidget {
   }
 }
 
-Future<Chord> showInputChord(
-    {@required BuildContext context, Chord init}) async {
-  if (init == null) {
-    init = Chord(ClampedPitch.c(), ChordType.Major);
-  }
-  return await showDialog(
+Future<Chord?> showInputChord({required BuildContext context, Chord? init}) {
+  init ??= Chord(ClampedPitch.c(), ChordType.Major);
+
+  return showDialog<Chord>(
       context: context,
       builder: (ctx) {
-        DialogClampedPitch pitch = DialogClampedPitch(init: init.root);
+        DialogClampedPitch pitch = DialogClampedPitch(init: init!.root);
         ChordType type = init.type;
 
         return AlertDialog(
@@ -90,11 +87,9 @@ Future<Chord> showInputChord(
                             value: sc,
                           ))
                       .toList(growable: false),
-                  onChanged: (v) {
-                    setState(() {
-                      type = v;
-                    });
-                  },
+                  onChanged: (ChordType? v) => setState(() {
+                    type = v!;
+                  }),
                   value: type,
                 ),
               ],
@@ -112,15 +107,13 @@ Future<Chord> showInputChord(
       });
 }
 
-Future<KeyScale> showInputKeyScale(
-    {@required BuildContext context, KeyScale init}) async {
-  if (init == null) {
-    init = KeyScale.cMajor();
-  }
-  return await showDialog(
+Future<KeyScale?> showInputKeyScale(
+    {required BuildContext context, KeyScale? init}) {
+  init ??= KeyScale.cMajor();
+  return showDialog<KeyScale>(
       context: context,
       builder: (ctx) {
-        DialogClampedPitch pitch = DialogClampedPitch(init: init.tonic);
+        DialogClampedPitch pitch = DialogClampedPitch(init: init!.tonic);
         Scale scale = init.scale;
 
         return AlertDialog(
@@ -137,9 +130,9 @@ Future<KeyScale> showInputKeyScale(
                             value: sc,
                           ))
                       .toList(growable: false),
-                  onChanged: (v) {
+                  onChanged: (Scale? v) {
                     setState(() {
-                      scale = v;
+                      scale = v!;
                     });
                   },
                   value: scale,
@@ -159,13 +152,13 @@ Future<KeyScale> showInputKeyScale(
       });
 }
 
-Future<ClampedPitch> showInputClampedPitch(
-    {@required BuildContext context, ClampedPitch init}) async {
+Future<ClampedPitch?> showInputClampedPitch(
+    {required BuildContext context, ClampedPitch? init}) {
   if (init == null) {
     init = ClampedPitch.c();
   }
   DialogClampedPitch dcp = DialogClampedPitch(init: init);
-  return await showDialog(
+  return showDialog<ClampedPitch>(
       context: context,
       builder: (ctx) {
         return AlertDialog(
@@ -186,7 +179,7 @@ Future<ClampedPitch> showInputClampedPitch(
 class DialogClampedPitch extends StatefulWidget {
   final ClampedPitch value;
 
-  DialogClampedPitch({ClampedPitch init})
+  DialogClampedPitch({ClampedPitch? init})
       : value = init != null
             ? ClampedPitch(init.whiteIndex, init.modification)
             : ClampedPitch.c();

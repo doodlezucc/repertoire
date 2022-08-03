@@ -11,7 +11,10 @@ class LyrichordsEditField extends StatefulWidget {
   final FocusNode focusNode;
 
   const LyrichordsEditField(
-      {Key key, @required this.data, @required this.chordCtrl, this.focusNode})
+      {Key? key,
+      required this.data,
+      required this.chordCtrl,
+      required this.focusNode})
       : super(key: key);
 
   @override
@@ -19,7 +22,7 @@ class LyrichordsEditField extends StatefulWidget {
 }
 
 class _LyrichordsEditFieldState extends State<LyrichordsEditField> {
-  TextEditingController ctrl;
+  late TextEditingController ctrl;
 
   @override
   void initState() {
@@ -83,7 +86,7 @@ class _LyrichordsEditFieldState extends State<LyrichordsEditField> {
           aboveLine += " " * (indexInLine - aboveLine.length) + name;
         } else {
           // merge chord into line above and surround it by spaces
-          String untouchedTail =
+          String? untouchedTail =
               aboveLine.length > indexInLine + name.length + 1
                   ? " " + aboveLine.substring(indexInLine + name.length + 1)
                   : null;
@@ -178,8 +181,8 @@ class _LyrichordsEditFieldState extends State<LyrichordsEditField> {
   @override
   Widget build(BuildContext context) {
     resetChordController();
-    var textStyle = Theme.of(context).textTheme.overline;
-    double charWidth = textStyle.fontSize * 0.76;
+    var textStyle = Theme.of(context).textTheme.overline!;
+    double charWidth = textStyle.fontSize! * 0.76;
     double inset = 12;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -220,7 +223,7 @@ class ChordSuggestions extends StatefulWidget {
   final bool visible;
 
   const ChordSuggestions(
-      {Key key, @required this.controller, this.visible = true})
+      {Key? key, required this.controller, this.visible = true})
       : super(key: key);
 
   @override
@@ -228,7 +231,7 @@ class ChordSuggestions extends StatefulWidget {
 }
 
 class _ChordSuggestionsState extends State<ChordSuggestions> {
-  ClampedPitch pitch;
+  ClampedPitch? pitch;
 
   void selectPitch(ClampedPitch p) {
     pitch = p;
@@ -277,8 +280,8 @@ class _ChordSuggestionsState extends State<ChordSuggestions> {
               ).toList()
             : ChordType.values
                 .map((e) => Suggestion(
-                      main: TapText(pitch.name + e.abbreviation, () {
-                        widget.controller.onChordSelected(Chord(pitch, e));
+                      main: TapText(pitch!.name + e.abbreviation, () {
+                        widget.controller.onChordSelected(Chord(pitch!, e));
                       }),
                     ))
                 .toList(),
@@ -312,18 +315,22 @@ class Suggestion extends StatefulWidget {
   static const center = height * 0.75;
 
   final TapText main;
-  final TapText above;
-  final TapText below;
+  final TapText? above;
+  final TapText? below;
 
-  const Suggestion({this.main, this.above, this.below, Key key})
-      : super(key: key);
+  const Suggestion({
+    required this.main,
+    this.above,
+    this.below,
+    Key? key,
+  }) : super(key: key);
 
   @override
   _SuggestionState createState() => _SuggestionState();
 }
 
 class _SuggestionState extends State<Suggestion> {
-  ScrollController ctrl;
+  late ScrollController ctrl;
 
   bool get isMultiple => widget.above != null && widget.below != null;
 
@@ -353,9 +360,9 @@ class _SuggestionState extends State<Suggestion> {
                     if (notif is ScrollEndNotification) {
                       var diff = ctrl.position.pixels - Suggestion.center;
                       if (diff < 0) {
-                        widget.above.action();
+                        widget.above!.action();
                       } else {
-                        widget.below.action();
+                        widget.below!.action();
                       }
                     }
                     return true;
@@ -366,9 +373,9 @@ class _SuggestionState extends State<Suggestion> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        SuggestionTile(widget.above.text, position: 1),
+                        SuggestionTile(widget.above!.text, position: 1),
                         SuggestionTile(widget.main.text, position: 0),
-                        SuggestionTile(widget.below.text, position: -1),
+                        SuggestionTile(widget.below!.text, position: -1),
                       ],
                     ),
                   ),
@@ -383,7 +390,8 @@ class SuggestionTile extends StatelessWidget {
   final String text;
   final int position;
 
-  const SuggestionTile(this.text, {Key key, this.position}) : super(key: key);
+  const SuggestionTile(this.text, {Key? key, required this.position})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {

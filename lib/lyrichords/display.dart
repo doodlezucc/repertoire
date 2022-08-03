@@ -11,7 +11,7 @@ class LyrichordsDisplayField extends StatefulWidget {
   final TextStyle style;
 
   const LyrichordsDisplayField(
-      {Key key, @required this.data, @required this.style})
+      {Key? key, required this.data, required this.style})
       : super(key: key);
 
   @override
@@ -24,7 +24,7 @@ class _LyrichordsDisplayFieldState extends State<LyrichordsDisplayField> {
     super.initState();
   }
 
-  TextStyle get baseStyle => Theme.of(context).textTheme.overline;
+  TextStyle get baseStyle => Theme.of(context).textTheme.overline!;
 
   TextSpan chordLine(String line, [String suffix = '']) {
     var symbols = RegExp(r'\S+').allMatches(line);
@@ -36,7 +36,7 @@ class _LyrichordsDisplayFieldState extends State<LyrichordsDisplayField> {
       void replaceChord(int spaces, RegExpMatch match) {
         l += ' ' * max(1, spaces + off);
 
-        var chord = match.group(0);
+        var chord = match.group(0)!;
         var replacement = transposeSymbol(chord, widget.data.transpose);
 
         l += replacement;

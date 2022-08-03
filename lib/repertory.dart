@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
 
 class Song {
   final Repertory repertory;
@@ -31,7 +30,7 @@ class Song {
     print("Saved " + data.description);
   }
 
-  String getFilePath(SongData data, Repertory repertory) =>
+  static String getFilePath(SongData data, Repertory repertory) =>
       join(repertory.directory.path, data.description.replaceAll("/", "-")) +
       ".txt";
 
@@ -40,9 +39,9 @@ class Song {
     repertory.songs.remove(this);
   }
 
-  Song(SongData data, this.repertory, this.creationTimestamp) : _data = data {
-    _file = File(getFilePath(data, repertory));
-  }
+  Song(SongData data, this.repertory, this.creationTimestamp)
+      : _data = data,
+        _file = File(getFilePath(data, repertory));
 }
 
 class SongData {
@@ -89,31 +88,34 @@ class SongData {
     ].join("\n");
   }
 
-  SongData.parse(String s) {
+  static SongData parse(String s) {
     var lines = s.split("\n");
-    title = lines[0];
-    artist = lines[1];
+    final title = lines[0];
+    final artist = lines[1];
     var line = lines[2];
-    tags = line.length > 0
+    final tags = line.length > 0
         ? line.split(",").map((e) => e.replaceAll("\\,", ",")).toSet()
-        : {};
+        : Set<String>();
 
     var divider = lines.indexWhere((line) => line.isEmpty, 3);
-    if (divider >= 4) {
-      transpose = int.parse(lines[3]);
-    }
-
-    lyrichords = lines.sublist(divider + 1).join("\n");
+    final transpose = divider >= 4 ? int.parse(lines[3]) : 0;
+    final lyrichords = lines.sublist(divider + 1).join("\n");
+    return SongData(
+      title: title,
+      artist: artist,
+      tags: tags,
+      transpose: transpose,
+      lyrichords: lyrichords,
+    );
   }
 
   SongData({
-    @required String title,
-    @required String artist,
-    @required this.tags,
+    required this.title,
+    required this.artist,
+    required this.tags,
     this.lyrichords = "",
     this.transpose = 0,
-  })  : title = title,
-        artist = artist;
+  });
 
   SongData.fromJson(
     Map<String, dynamic> json,
@@ -163,30 +165,13 @@ class Repertory {
     return out;
   }
 
-  @deprecated
-  Repertory.fromJson(Map<String, dynamic> json, void Function() onDone) {
-    getExternalStorageDirectory().then((dir) {
-      directory = Directory(join(dir.path, "Repertoire"));
-      directory.createSync(recursive: true);
-
-      List<String> tagList = List.from(json["tags"])
-          .map<String>((jtag) => jtag["name"])
-          .toList(growable: false);
-
-      int i = 0;
-      songs = List.from(json["songs"])
-          .map((j) => Song(SongData.fromJson(j, tagList, this), this, i++))
-          .toSet();
-
-      onDone();
-    });
-  }
-
   void loadAllSongs(void Function(Song song) onLoaded) {
     var filestream = directory.list();
-    filestream.listen((file) async {
-      var song = await _loadSong(file);
-      onLoaded(song);
+    filestream.listen((fse) async {
+      if (fse is File) {
+        var song = await _loadSong(fse);
+        onLoaded(song);
+      }
     });
   }
 

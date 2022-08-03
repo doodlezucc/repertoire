@@ -5,17 +5,6 @@ Future<String> download(dynamic uri) async {
   return response.body;
 }
 
-class WebError implements Error {
-  final String msg;
-
-  WebError(this.msg);
-
-  @override
-  StackTrace get stackTrace => null;
-  @override
-  String toString() => msg;
-}
-
 class GoScraper {
   static Future<dynamic> getFirstResult(String query, String site) async {
     query = query.replaceAll(RegExp(r'\(([^)]+)\)'), '').trim();
@@ -35,7 +24,7 @@ class GoScraper {
       s = s.substring(0, s.indexOf('&amp;'));
       return s;
     } catch (e) {
-      return WebError('Search failed!');
+      throw 'Search failed!';
     }
   }
 }
