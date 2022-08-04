@@ -36,12 +36,14 @@ class AutocompleteField extends StatefulWidget {
   final AutocompleteOnSelected<String>? onSelected;
   final FocusNode focusNode;
   final String hintText;
+  final void Function(String)? onChanged;
 
   const AutocompleteField({
     Key? key,
     required this.optionsBuilder,
     required this.focusNode,
     required this.controller,
+    this.onChanged,
     this.hintText = '',
     this.onSelected,
   }) : super(key: key);
@@ -106,6 +108,7 @@ class _AutocompleteFieldState extends State<AutocompleteField> {
       fieldViewBuilder:
           (ctx, textEditingController, focusNode, onFieldSubmitted) {
         return TextField(
+          onChanged: widget.onChanged,
           onSubmitted: (s) => onFieldSubmitted(),
           focusNode: focusNode,
           controller: textEditingController,

@@ -215,11 +215,9 @@ class _SongEditPageState extends State<SongEditPage> {
                                 .map((tag) => Chip(
                                       label: Text(tag),
                                       deleteIcon: Icon(Icons.cancel),
-                                      onDeleted: () {
-                                        setState(() {
-                                          data.tags.remove(tag);
-                                        });
-                                      },
+                                      onDeleted: () => setState(() {
+                                        data.tags.remove(tag);
+                                      }),
                                     ))
                                 .toList(),
                           ),
@@ -235,6 +233,7 @@ class _SongEditPageState extends State<SongEditPage> {
                                     optionsBuilder: containMatcher(
                                         widget.song.repertory.getAllTags()),
                                     onSelected: addTag,
+                                    onChanged: (s) => setState(() {}),
                                   ),
                                 ),
                                 TextButton.icon(
