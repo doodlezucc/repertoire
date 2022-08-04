@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:repertoire/tuner/tuner.dart';
 
 import 'repertory.dart';
 import 'song_edit_page.dart';
@@ -116,14 +117,14 @@ class _MyHomePageState extends State<MyHomePage> {
               height: 50,
               child: Row(
                 children: <Widget>[
-                  // IconButton(
-                  //   icon: Icon(Icons.save),
-                  //   onPressed: () {
-                  //     songs.forEach((element) {
-                  //       element.save();
-                  //     });
-                  //   },
-                  // ),
+                  IconButton(
+                    icon: Icon(Icons.multitrack_audio),
+                    onPressed: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => TunerPage(),
+                      ));
+                    },
+                  ),
                   // IconButton(
                   //   icon: Icon(Icons.insert_drive_file),
                   //   onPressed: load,

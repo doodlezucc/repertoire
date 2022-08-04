@@ -26,6 +26,8 @@ dependencies:
   numberpicker: ^2.1.1
   path: ^1.8.0
   path_provider: ^2.0.11
+  pitch_detector_dart: ^0.0.2
+  pitchupdart: ^0.0.2
 
 dev_dependencies:
   flutter_test:
