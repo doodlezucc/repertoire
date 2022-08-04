@@ -1,6 +1,6 @@
-import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
+import 'package:repertoire/autocomplete.dart';
 
 import 'keyboard_visibility.dart';
 import 'lyrichords/display.dart';
@@ -98,8 +98,10 @@ class _DownloadButtonState extends State<DownloadButton> {
 
 class _SongEditPageState extends State<SongEditPage> {
   late SongData data;
-  late AutoCompleteTextField<String> _artistField;
-  late AutoCompleteTextField<String> _tagAddField;
+  late TextEditingController _artistCtrl;
+  late TextEditingController _tagAddCtrl;
+  final _artistFocus = FocusNode();
+  final _tagFocus = FocusNode();
   String tagFieldText = "";
   var chordCtrl = ChordSuggestionsController();
   var focusNode = FocusNode();
@@ -109,122 +111,18 @@ class _SongEditPageState extends State<SongEditPage> {
   void initState() {
     super.initState();
     data = SongData.from(widget.song.data);
+    _artistCtrl = TextEditingController(text: data.artist);
+    _tagAddCtrl = TextEditingController();
     editLyrichords = widget.isCreation || data.lyrichords.isEmpty;
-    resetArtistField();
-    resetTagAddField();
     focusNode.addListener(() {
       setState(() {});
     });
   }
 
-  void resetArtistField() {
-    void Function(String) next = (s) {
-      _artistField.textField!.onChanged!(_artistField.controller!.text);
-      _tagAddField.focusNode!.requestFocus();
-    };
-    GlobalKey<AutoCompleteTextFieldState<String>> key = new GlobalKey();
-    _artistField = AutoCompleteTextField<String>(
-      focusNode: FocusNode(),
-      controller: TextEditingController(text: data.artist),
-      decoration: InputDecoration(hintText: "Artist..."),
-      key: key,
-      suggestions:
-          widget.song.repertory.getAllArtists().toList(growable: false),
-      clearOnSubmit: false,
-      submitOnSuggestionTap: true,
-      textInputAction: TextInputAction.next,
-      textSubmitted: next,
-      textChanged: (s) {
-        data.artist = s;
-      },
-      itemBuilder: (context, item) {
-        String q = _artistField.controller!.text;
-        int index = item.toLowerCase().indexOf(q.toLowerCase());
-        return Padding(
-            padding: EdgeInsets.all(8.0),
-            child: RichText(
-              text: TextSpan(
-                  style: new TextStyle(
-                    fontSize: 14.0,
-                    color: Colors.black,
-                  ),
-                  children: <TextSpan>[
-                    TextSpan(text: item.substring(0, index)),
-                    TextSpan(
-                        text: item.substring(index, index + q.length),
-                        style: TextStyle(backgroundColor: Colors.red[100])),
-                    TextSpan(text: item.substring(index + q.length))
-                  ]),
-            ));
-      },
-      itemSorter: (a, b) {
-        if (SongData.artistSortCut(a)
-            .toLowerCase()
-            .startsWith(_artistField.controller!.text.toLowerCase())) {
-          return -1;
-        }
-        if (SongData.artistSortCut(b)
-            .toLowerCase()
-            .startsWith(_artistField.controller!.text.toLowerCase())) {
-          return 1;
-        }
-        return a.toLowerCase().compareTo(b.toLowerCase());
-      },
-      itemFilter: (item, query) {
-        return item.toLowerCase().contains(query.toLowerCase());
-      },
-      itemSubmitted: next,
-    );
-  }
-
-  void resetTagAddField() {
-    GlobalKey<AutoCompleteTextFieldState<String>> key = new GlobalKey();
-    _tagAddField = AutoCompleteTextField<String>(
-      focusNode: FocusNode(),
-      controller: TextEditingController(text: tagFieldText),
-      decoration: InputDecoration(hintText: "New tag..."),
-      key: key,
-      textInputAction: TextInputAction.next,
-      suggestions: widget.song.repertory.getAllTags().toList(),
-      clearOnSubmit: false,
-      submitOnSuggestionTap: false,
-      textSubmitted: (s) {
-        if (s.length > 0) {
-          addTag(s);
-        }
-      },
-      textChanged: (s) {
-        setState(() {
-          tagFieldText = s;
-        });
-      },
-      itemBuilder: (context, item) {
-        return GestureDetector(
-            onTap: () {
-              addTag(item);
-            },
-            behavior: HitTestBehavior.opaque,
-            child: Padding(padding: EdgeInsets.all(8.0), child: Text(item)));
-      },
-      itemSorter: (a, b) {
-        return a.compareTo(b);
-      },
-      itemFilter: (item, query) {
-        return item.toLowerCase().startsWith(query.toLowerCase());
-      },
-      itemSubmitted: (item) {
-        addTag(item);
-      },
-    );
-  }
-
   void addTag(String tag) {
     setState(() {
       data.tags.add(tag);
-      if (!_tagAddField.suggestions.contains(tag)) {
-        _tagAddField.addSuggestion(tag);
-      }
-      _tagAddField.clear();
+      _tagAddCtrl.clear();
     });
   }
 
@@ -301,12 +199,15 @@ class _SongEditPageState extends State<SongEditPage> {
                                     InputDecoration(hintText: "Title..."),
                                 textInputAction: TextInputAction.next,
                                 onChanged: (s) => data.title = s,
-                                onSubmitted: (s) {
-                                  _artistField.focusNode!.requestFocus();
-                                },
                                 autofocus: widget.isCreation,
                               ),
-                              _artistField,
+                              AutocompleteField(
+                                hintText: 'Artist...',
+                                focusNode: _artistFocus,
+                                controller: _artistCtrl,
+                                optionsBuilder: containMatcher(
+                                    widget.song.repertory.getAllArtists()),
+                              ),
                             ],
                           ),
                           Wrap(
@@ -326,14 +227,22 @@ class _SongEditPageState extends State<SongEditPage> {
                             height: 50,
                             child: Row(
                               children: <Widget>[
-                                Expanded(child: _tagAddField),
+                                Expanded(
+                                  child: AutocompleteField(
+                                    hintText: 'Add tag...',
+                                    focusNode: _tagFocus,
+                                    controller: _tagAddCtrl,
+                                    optionsBuilder: containMatcher(
+                                        widget.song.repertory.getAllTags()),
+                                    onSelected: addTag,
+                                  ),
+                                ),
                                 TextButton.icon(
                                   icon: Icon(Icons.add_circle),
                                   label: Text("Add"),
-                                  onPressed:
-                                      _tagAddField.controller!.text.isEmpty
-                                          ? null
-                                          : _tagAddField.triggerSubmitted,
+                                  onPressed: _tagAddCtrl.text.isEmpty
+                                      ? null
+                                      : () => addTag(_tagAddCtrl.text),
                                 )
                               ],
                             ),
