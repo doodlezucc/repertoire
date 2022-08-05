@@ -17,6 +17,7 @@ environment:
   sdk: ">=2.12.0 <3.0.0"
 
 dependencies:
+  audioplayers: ^1.0.1
   flutter:
     sdk: flutter
 
@@ -28,6 +29,7 @@ dependencies:
   path_provider: ^2.0.11
   pitch_detector_dart: ^0.0.2
   pitchupdart: ^0.0.2
+  record: ^4.3.2
 
 dev_dependencies:
   flutter_test:

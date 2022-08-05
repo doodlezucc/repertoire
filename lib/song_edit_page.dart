@@ -1,6 +1,9 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:repertoire/autocomplete.dart';
+import 'package:repertoire/mini_player.dart';
 
 import 'keyboard_visibility.dart';
 import 'lyrichords/display.dart';
@@ -102,9 +105,9 @@ class _SongEditPageState extends State<SongEditPage> {
   late TextEditingController _tagAddCtrl;
   final _artistFocus = FocusNode();
   final _tagFocus = FocusNode();
-  String tagFieldText = "";
-  var chordCtrl = ChordSuggestionsController();
-  var focusNode = FocusNode();
+  final chordCtrl = ChordSuggestionsController();
+  final focusNode = FocusNode();
+  final players = Map<String, AudioPlayer>();
 
   var editLyrichords = false;
 
@@ -114,9 +117,25 @@ class _SongEditPageState extends State<SongEditPage> {
     _artistCtrl = TextEditingController(text: data.artist);
     _tagAddCtrl = TextEditingController();
     editLyrichords = widget.isCreation || data.lyrichords.isEmpty;
-    focusNode.addListener(() {
-      setState(() {});
-    });
+    focusNode.addListener(() => setState(() {}));
+    resetStuff();
+  }
+
+  @override
+  void dispose() {
+    players.values.forEach((player) => player.dispose());
+    super.dispose();
+  }
+
+  void resetStuff() async {
+    players.values.forEach((player) => player.dispose());
+    players.clear();
+
+    var dir = await getExternalStorageDirectory();
+    var path = '${dir!.path}/test.wav';
+    print(path);
+    players[path] = AudioPlayer();
+    setState(() {});
   }
 
   void addTag(String tag) {
@@ -176,7 +195,17 @@ class _SongEditPageState extends State<SongEditPage> {
             });
       },
       child: Scaffold(
-        appBar: AppBar(title: Text("Edit song details")),
+        appBar: AppBar(
+          title: Text("Edit song details"),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.help_outline),
+              onPressed: () {
+                resetStuff();
+              },
+            ),
+          ],
+        ),
         body: KeyboardVisibilityBuilder(
           builder: (context, child, isKeyboardVisible) => Column(
             children: [
@@ -324,6 +353,15 @@ class _SongEditPageState extends State<SongEditPage> {
                           ),
                           Expanded(child: Container()),
                         ],
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Column(
+                        children: players.entries
+                            .map((e) =>
+                                MiniPlayer(player: e.value, source: e.key))
+                            .toList(),
                       ),
                     ),
                   ],
