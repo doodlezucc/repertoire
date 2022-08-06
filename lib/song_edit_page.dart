@@ -1,7 +1,8 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
+import 'package:record/record.dart';
 
 import 'autocomplete.dart';
 import 'keyboard_visibility.dart';
@@ -12,19 +13,7 @@ import 'repertory.dart';
 import 'web_extractors/ge.dart';
 import 'web_extractors/ug.dart';
 
-class SongEditPage extends StatefulWidget {
-  final Song song;
-  final bool isCreation;
-
-  const SongEditPage({
-    Key? key,
-    required this.song,
-    this.isCreation = false,
-  }) : super(key: key);
-
-  @override
-  _SongEditPageState createState() => _SongEditPageState();
-}
+final record = Record();
 
 class DownloadButton extends StatefulWidget {
   final SongData data;
@@ -93,6 +82,20 @@ class _DownloadButtonState extends State<DownloadButton> {
   }
 }
 
+class SongEditPage extends StatefulWidget {
+  final Song song;
+  final bool isCreation;
+
+  const SongEditPage({
+    Key? key,
+    required this.song,
+    this.isCreation = false,
+  }) : super(key: key);
+
+  @override
+  _SongEditPageState createState() => _SongEditPageState();
+}
+
 class _SongEditPageState extends State<SongEditPage> {
   late SongData data;
   late TextEditingController _artistCtrl;
@@ -104,6 +107,8 @@ class _SongEditPageState extends State<SongEditPage> {
   final players = Map<String, AudioPlayer>();
 
   var editLyrichords = false;
+  var isRecording = false;
+  var isSwitchingRecording = false;
 
   void initState() {
     super.initState();
@@ -112,24 +117,19 @@ class _SongEditPageState extends State<SongEditPage> {
     _tagAddCtrl = TextEditingController();
     editLyrichords = widget.isCreation || data.lyrichords.isEmpty;
     focusNode.addListener(() => setState(() {}));
-    resetStuff();
+
+    for (var path in data.recordings) {
+      players[path] = AudioPlayer();
+    }
   }
 
   @override
   void dispose() {
+    if (isRecording) {
+      record.stop();
+    }
     players.values.forEach((player) => player.dispose());
     super.dispose();
-  }
-
-  void resetStuff() async {
-    players.values.forEach((player) => player.dispose());
-    players.clear();
-
-    var dir = await getExternalStorageDirectory();
-    var path = '${dir!.path}/test.wav';
-    print(path);
-    players[path] = AudioPlayer();
-    setState(() {});
   }
 
   void addTag(String tag) {
@@ -150,6 +150,31 @@ class _SongEditPageState extends State<SongEditPage> {
   void onDownloaded() {
     chordCtrl.value = ChordSuggestionValue(chordCtrl.value.stage);
     setState(() {});
+  }
+
+  void toggleRecording() async {
+    setState(() => isSwitchingRecording = true);
+
+    if (!isRecording) {
+      if (await record.hasPermission()) {
+        var dir = widget.song.repertory.recordings;
+        var now = DateTime.now().millisecondsSinceEpoch;
+        var name = '$now.aac';
+        var path = p.join(dir.path, name);
+        await record.start(path: path);
+        isRecording = true;
+      }
+    } else {
+      var path = await record.stop();
+      if (path != null) {
+        print('added path "$path"');
+        widget.song.data.recordings.add(path);
+        players[path] = AudioPlayer();
+      }
+      isRecording = false;
+    }
+
+    setState(() => isSwitchingRecording = false);
   }
 
   @override
@@ -189,17 +214,7 @@ class _SongEditPageState extends State<SongEditPage> {
             });
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text("Edit song details"),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.help_outline),
-              onPressed: () {
-                resetStuff();
-              },
-            ),
-          ],
-        ),
+        appBar: AppBar(title: Text("Edit song details")),
         body: KeyboardVisibilityBuilder(
           builder: (context, child, isKeyboardVisible) => Column(
             children: [
@@ -349,13 +364,16 @@ class _SongEditPageState extends State<SongEditPage> {
                         ],
                       ),
                     ),
+                    SizedBox(height: 8),
                     Padding(
-                      padding: EdgeInsets.all(16),
+                      padding: EdgeInsets.symmetric(horizontal: 16),
                       child: Column(
-                        children: players.entries
-                            .map((e) =>
-                                MiniPlayer(player: e.value, source: e.key))
-                            .toList(),
+                        children: players.entries.expand((e) {
+                          return [
+                            MiniPlayer(player: e.value, source: e.key),
+                            SizedBox(height: 8),
+                          ];
+                        }).toList(),
                       ),
                     ),
                   ],
@@ -368,21 +386,27 @@ class _SongEditPageState extends State<SongEditPage> {
             ],
           ),
         ),
-        bottomNavigationBar: Container(
-          height: 50,
-          child: Row(
-            children: <Widget>[
-              TextButton.icon(
-                icon: Icon(Icons.done),
-                label: Text("Done"),
-                onPressed: () {
-                  applyChanges();
-                  Navigator.pop(context);
-                },
-              )
-            ],
+        persistentFooterButtons: [
+          TextButton.icon(
+            icon: Icon(isRecording ? Icons.save : Icons.mic),
+            label: Text(isRecording ? "Recording..." : "Record"),
+            onPressed: toggleRecording,
+            style: isRecording
+                ? ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(Colors.red[300]),
+                    foregroundColor: MaterialStateProperty.all(Colors.white),
+                  )
+                : null,
           ),
-        ),
+          TextButton.icon(
+            icon: Icon(Icons.done),
+            label: Text("Done"),
+            onPressed: () {
+              applyChanges();
+              Navigator.pop(context);
+            },
+          ),
+        ],
       ),
     );
   }

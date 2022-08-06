@@ -51,6 +51,7 @@ class SongData {
   Set<String> tags = {};
   String lyrichords;
   int transpose = 0;
+  List<String> recordings;
 
   String get description {
     String t = title.isEmpty ? "Untitled" : title;
@@ -65,7 +66,8 @@ class SongData {
         artist == other.artist &&
         setEquals(tags, other.tags) &&
         lyrichords == other.lyrichords &&
-        transpose == other.transpose;
+        transpose == other.transpose &&
+        listEquals(recordings, other.recordings);
   }
 
   static String artistSortCut(String artist) =>
@@ -82,7 +84,7 @@ class SongData {
       title,
       artist,
       tags.map((e) => e.replaceAll(",", "\\,")).join(","),
-      transpose,
+      ['$transpose', ...recordings].join(','),
       "",
       lyrichords,
     ].join("\n");
@@ -98,7 +100,9 @@ class SongData {
         : Set<String>();
 
     var divider = lines.indexWhere((line) => line.isEmpty, 3);
-    final transpose = divider >= 4 ? int.parse(lines[3]) : 0;
+    final meta = divider >= 4 ? lines[3].split(',') : null;
+    final transpose = int.parse(meta?[0] ?? '0');
+    final recs = meta?.sublist(1);
     final lyrichords = lines.sublist(divider + 1).join("\n");
     return SongData(
       title: title,
@@ -106,6 +110,7 @@ class SongData {
       tags: tags,
       transpose: transpose,
       lyrichords: lyrichords,
+      recordings: recs,
     );
   }
 
@@ -115,7 +120,8 @@ class SongData {
     required this.tags,
     this.lyrichords = "",
     this.transpose = 0,
-  });
+    List<String>? recordings,
+  }) : recordings = recordings ?? [];
 
   SongData.fromJson(
     Map<String, dynamic> json,
@@ -136,6 +142,7 @@ class SongData {
           tags: Set.from(source.tags),
           lyrichords: source.lyrichords,
           transpose: source.transpose,
+          recordings: source.recordings,
         );
 }
 
@@ -149,11 +156,13 @@ class Voice {
 }
 
 class Repertory {
-  Directory directory;
+  final Directory directory;
+  final Directory recordings;
+  final Set<Song> songs = {};
 
-  Set<Song> songs = {};
-
-  Repertory(this.directory);
+  Repertory(this.directory)
+      : recordings = Directory(join(directory.path, 'recordings'))
+          ..create(recursive: true);
 
   get isEmpty => songs.isEmpty;
 
