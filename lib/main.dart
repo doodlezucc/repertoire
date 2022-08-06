@@ -18,15 +18,19 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: "Repertoire",
       theme: ThemeData(
-          primarySwatch: Colors.red,
-          textTheme: TextTheme(
-            overline: TextStyle(
-              fontFamily: "FiraCode",
-              fontSize: 13,
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-            ),
-          )),
+        primarySwatch: Colors.red,
+        textTheme: TextTheme(
+          overline: TextStyle(
+            fontFamily: "FiraCode",
+            fontSize: 13,
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ButtonStyle(shape: MaterialStateProperty.all(StadiumBorder())),
+        ),
+      ),
       home: MyHomePage(),
     );
   }

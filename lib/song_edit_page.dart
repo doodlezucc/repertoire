@@ -2,12 +2,12 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:repertoire/autocomplete.dart';
-import 'package:repertoire/mini_player.dart';
 
+import 'autocomplete.dart';
 import 'keyboard_visibility.dart';
 import 'lyrichords/display.dart';
 import 'lyrichords/edit.dart';
+import 'mini_player.dart';
 import 'repertory.dart';
 import 'web_extractors/ge.dart';
 import 'web_extractors/ug.dart';
@@ -47,7 +47,7 @@ class _DownloadButtonState extends State<DownloadButton> {
 
   @override
   Widget build(BuildContext context) {
-    return TextButton.icon(
+    return ElevatedButton.icon(
       icon: isDownloading
           ? SizedBox(
               width: 16,
@@ -59,12 +59,6 @@ class _DownloadButtonState extends State<DownloadButton> {
           : Icon(Icons.get_app),
       label: Text("Lyrics" + (widget.withChords ? " with chords" : "")),
       onPressed: isDownloading ? null : findLyrichords,
-      style: ButtonStyle(
-        shape: MaterialStateProperty.all(StadiumBorder()),
-        backgroundColor:
-            MaterialStateProperty.all(Theme.of(context).primaryColor),
-        foregroundColor: MaterialStateProperty.all(Colors.white),
-      ),
     );
   }
 
