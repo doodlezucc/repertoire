@@ -104,12 +104,17 @@ class _AutocompleteFieldState extends State<AutocompleteField> {
       focusNode: widget.focusNode,
       optionsViewBuilder: optionsViewBuilder,
       optionsBuilder: widget.optionsBuilder,
-      onSelected: widget.onSelected,
+      onSelected: (String s) {
+        print(widget.focusNode.hasFocus);
+        if (widget.onSelected != null) {
+          print('ON SELECTED $s');
+          widget.onSelected!(s);
+        }
+      },
       fieldViewBuilder:
           (ctx, textEditingController, focusNode, onFieldSubmitted) {
         return TextField(
           onChanged: widget.onChanged,
-          onSubmitted: (s) => onFieldSubmitted(),
           focusNode: focusNode,
           controller: textEditingController,
           decoration: InputDecoration(hintText: widget.hintText),

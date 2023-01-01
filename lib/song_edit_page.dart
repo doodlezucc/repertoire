@@ -114,6 +114,7 @@ class _SongEditPageState extends State<SongEditPage> {
     super.initState();
     data = SongData.from(widget.song.data);
     _artistCtrl = TextEditingController(text: data.artist);
+    _artistCtrl.addListener(() => data.artist = _artistCtrl.text);
     _tagAddCtrl = TextEditingController();
     editLyrichords = widget.isCreation || data.lyrichords.isEmpty;
     focusNode.addListener(() => setState(() {}));
