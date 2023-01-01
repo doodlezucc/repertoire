@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 
 class MiniPlayer extends StatefulWidget {
@@ -21,12 +22,15 @@ class _MiniPlayerState extends State<MiniPlayer> {
   Duration? duration;
   bool get isPlaying => widget.player.state == PlayerState.playing;
   final List<StreamSubscription> subscriptions = [];
-  String get title => basenameWithoutExtension(widget.source);
+  late String title;
   double? progressOverride;
 
   @override
   void initState() {
     super.initState();
+
+    title = basenameWithoutExtension(widget.source);
+    title = dateString(DateTime.fromMillisecondsSinceEpoch(int.parse(title)));
 
     subscriptions.addAll([
       widget.player.onDurationChanged
@@ -52,6 +56,11 @@ class _MiniPlayerState extends State<MiniPlayer> {
     super.dispose();
   }
 
+  static String dateString(DateTime dateTime) {
+    final date = DateFormat.yMMMd().format(dateTime);
+    return '$date';
+  }
+
   static String timeString(Duration d) {
     var min = d.inMinutes;
     var sec = d.inSeconds % 60;
@@ -66,6 +75,8 @@ class _MiniPlayerState extends State<MiniPlayer> {
 
   @override
   Widget build(BuildContext context) {
+    title = basenameWithoutExtension(widget.source);
+    title = dateString(DateTime.fromMillisecondsSinceEpoch(int.parse(title)));
     Duration? overridePosition = position;
 
     void updateOverride() {
@@ -94,7 +105,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: Colors.black26,
+            color: Colors.black12,
             offset: Offset(0, 2),
             blurRadius: 4,
           ),

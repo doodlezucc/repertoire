@@ -24,6 +24,7 @@ dependencies:
   flutter_voice_processor: ^1.0.8
   html_unescape: ^2.0.0
   http: ^0.13.4
+  intl: ^0.17.0
   numberpicker: ^2.1.1
   path: ^1.8.0
   path_provider: ^2.0.11
